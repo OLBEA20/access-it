@@ -1,0 +1,2 @@
+class AccessDatabaseAlreadyExist(Exception):
+    pass

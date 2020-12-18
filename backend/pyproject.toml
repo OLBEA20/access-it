@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "access-it"
+version = "0.1.0"
+description = ""
+authors = ["Olivier"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "^1.7.3"
+fastapi = "^0.62.0"
+JayDeBeApi = "^1.2.3"
+pytest-mock = "^3.3.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.0"
+black = "^20.8b1"
+flake8 = "^3.8.4"
+requests = "^2.25.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
