@@ -10,8 +10,10 @@ import {
 } from "@material-ui/core";
 import { StorageOutlined } from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
-import { createDatabase, listDatabases } from "./api";
-import { NewResourceInput } from "./commons/components/NewResourceInput";
+import { useNavigate } from "react-router-dom";
+import { createDatabase, listDatabases } from "../api/api";
+import { NewResourceInput } from "../commons/components/NewResourceInput";
+import { ROUTES } from "../routes";
 
 const useStyle = makeStyles((theme: Theme) => ({
     root: {
@@ -20,6 +22,7 @@ const useStyle = makeStyles((theme: Theme) => ({
         padding: theme.spacing(2),
         minWidth: 300,
     },
+
     title: {
         display: "flex",
         alignItems: "center",
@@ -29,6 +32,7 @@ const useStyle = makeStyles((theme: Theme) => ({
 export function DatabasesContainer() {
     const classes = useStyle();
     const [databases, setDatabases] = useState<string[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         listDatabases().then(({ names }) => setDatabases(names));
@@ -44,17 +48,28 @@ export function DatabasesContainer() {
             <Divider />
             <List dense>
                 {databases.map((name) => (
-                    <ListItem key={name} button disableGutters>
+                    <ListItem
+                        key={name}
+                        button
+                        disableGutters
+                        data-testid={`database-item`}
+                        onClick={() => navigate(ROUTES.database(name))}
+                    >
                         <ListItemText>{name}</ListItemText>
                     </ListItem>
                 ))}
             </List>
             <NewResourceInput
-                onSave={async (name) => {
-                    const databaseName = (await createDatabase(name)).name;
-                    setDatabases((databases) => [...databases, databaseName]);
-                }}
+                onSave={(name) =>
+                    createDatabase(name)
+                        .then(({ name }) =>
+                            setDatabases((databases) => [...databases, name])
+                        )
+                        .catch(silenceError)
+                }
             />
         </Paper>
     );
 }
+
+const silenceError = () => {};

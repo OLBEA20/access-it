@@ -1,6 +1,10 @@
 import { makeStyles } from "@material-ui/core";
 import React from "react";
-import { DatabasesContainer } from "./DatabasesContainer";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { DatabaseContainer } from "./databases/DatabaseContainer";
+import { DatabasesContainer } from "./databases/DatabasesContainer";
+import { DatabaseTableContainer } from "./databases/DatabaseTableContainer";
+import { NewTableForm } from "./databases/NewTableForm";
 
 const useStyle = makeStyles(() => ({
     root: {
@@ -17,7 +21,23 @@ export function App() {
 
     return (
         <div className={classes.root}>
-            <DatabasesContainer />
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<DatabasesContainer />} />
+                    <Route
+                        path="/databases/:databaseName"
+                        element={<DatabaseContainer />}
+                    />
+                    <Route
+                        path="/databases/:databaseName/tables/:tableName"
+                        element={<DatabaseTableContainer />}
+                    />
+                    <Route
+                        path="/databases/:databaseName/new-table"
+                        element={<NewTableForm />}
+                    />
+                </Routes>
+            </BrowserRouter>
         </div>
     );
 }

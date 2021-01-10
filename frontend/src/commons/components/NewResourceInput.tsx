@@ -21,6 +21,7 @@ export function NewResourceInput({ onSave }: Props) {
     const submitForm = () => {
         onSave(name);
         setInputOpen(false);
+        setName("");
     };
 
     return (

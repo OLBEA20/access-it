@@ -1,11 +1,12 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { App } from "../App";
-import { listDatabases } from "../api";
+import { listDatabases } from "../api/api";
 
 const SOME_DATABASES_NAME = ["a", "b"];
 
-jest.mock("../api");
+jest.mock("../api/api");
+jest.unmock("react-router-dom");
 
 describe("on render", () => {
     it("should list databases", async () => {
