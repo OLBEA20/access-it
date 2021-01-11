@@ -1,3 +1,4 @@
+import { stringNumberComparer } from "@material-ui/data-grid";
 import fetchMock from "fetch-mock";
 import {
     Database,
@@ -46,6 +47,17 @@ export function readDatabaseTable(
 ): Promise<DatabaseTable> {
     return fetch(
         `http://localhost:8000/databases/${databaseName}/tables/${tableName}`
+    ).then((response) => response.json());
+}
+
+export function insertRowInDatabaseTable(
+    databaseName: string,
+    tableName: string,
+    row: string[][]
+): Promise<void> {
+    return fetch(
+        `http://localhost:8000/databases/${databaseName}/tables/${tableName}/rows`,
+        { method: "Post", body: JSON.stringify({ values: row }) }
     ).then((response) => response.json());
 }
 

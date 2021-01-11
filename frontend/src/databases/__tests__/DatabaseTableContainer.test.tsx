@@ -1,10 +1,9 @@
 import React from "react";
 import { act, render, screen, waitFor } from "@testing-library/react";
-import { readDatabaseTable } from "../../api/api";
-import { ColumnType } from "../../api/models";
+import { insertRowInDatabaseTable, readDatabaseTable } from "../../api/api";
 import { DatabaseTableContainer } from "../DatabaseTableContainer";
 import { useParams } from "react-router-dom";
-import { clickButton } from "../../commons/fireEventUtils";
+import { clickButton, typeText } from "../../commons/fireEventUtils";
 
 jest.mock("react-router-dom");
 jest.mock("../../api/api");
@@ -18,6 +17,8 @@ const A_TABLE = {
     ],
 };
 
+const A_VALUE = "a_value";
+const ANOTHER_VALUE = "another_value";
 describe("<DatabaseTableContainer />", () => {
     beforeEach(async () => {
         (useParams as jest.Mock).mockReturnValue({
@@ -52,7 +53,90 @@ describe("<DatabaseTableContainer />", () => {
         it("should open new row form", async () => {
             clickButton({ name: /add row/i });
 
-            expect(await screen.findByRole("form", { name: /new row/i }));
+            expect(
+                await screen.findByRole("form", { name: /new row/i })
+            ).toBeInTheDocument();
+        });
+
+        it("should hide add row button", async () => {
+            clickButton({ name: /add row/i });
+
+            await waitFor(() =>
+                expect(
+                    screen.queryByRole("button", { name: /add row/i })
+                ).not.toBeInTheDocument()
+            );
+        });
+
+        describe("on cancel", () => {
+            it("should hide new row form", async () => {
+                clickButton({ name: /add row/i });
+
+                clickButton({ name: /cancel/i });
+
+                await waitFor(() =>
+                    expect(
+                        screen.queryByRole("form", { name: /new row/i })
+                    ).not.toBeInTheDocument()
+                );
+            });
+
+            it("should display add row button", async () => {
+                clickButton({ name: /add row/i });
+
+                clickButton({ name: /cancel/i });
+
+                expect(
+                    await screen.findByRole("button", { name: /add row/i })
+                ).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe("on submit", () => {
+        it("should add new row", async () => {
+            clickButton({ name: /add row/i });
+
+            typeText(A_VALUE).in(
+                screen.getByRole("textbox", { name: A_TABLE.columns[0] })
+            );
+            typeText(ANOTHER_VALUE).in(
+                screen.getByRole("textbox", { name: A_TABLE.columns[1] })
+            );
+            clickButton({ name: /add/i });
+
+            await waitFor(() =>
+                expect(insertRowInDatabaseTable).toHaveBeenCalledWith(
+                    "database",
+                    "table",
+                    [
+                        [A_TABLE.columns[0], A_VALUE],
+                        [A_TABLE.columns[1], ANOTHER_VALUE],
+                    ]
+                )
+            );
+        });
+
+        it("should hide new row form", async () => {
+            clickButton({ name: /add row/i });
+
+            clickButton({ name: /add/i });
+
+            await waitFor(() =>
+                expect(
+                    screen.queryByRole("form", { name: /new row/i })
+                ).not.toBeInTheDocument()
+            );
+        });
+
+        it("should display add row button", async () => {
+            clickButton({ name: /add row/i });
+
+            clickButton({ name: /add/i });
+
+            expect(
+                await screen.findByRole("button", { name: /add row/i })
+            ).toBeInTheDocument();
         });
     });
 });
