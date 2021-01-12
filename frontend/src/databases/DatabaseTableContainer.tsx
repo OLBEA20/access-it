@@ -8,15 +8,17 @@ import { NewRowForm } from "./NewRowForm";
 
 const useStyle = makeStyles((theme: Theme) => ({
     table: {
-        height: 300,
+        //height: 300,
+        flexGrow: 1,
+        maxHeight: 800,
     },
+    datagrid: {},
     root: {
         width: "100%",
         height: `calc(100% - 2 * ${theme.spacing(2)}px)`,
         padding: theme.spacing(2),
         display: "flex",
         flexDirection: "column",
-        position: "relative",
     },
 }));
 
@@ -37,10 +39,12 @@ export function DatabaseTableContainer() {
             </Typography>
             <div className={classes.table}>
                 <DataGrid
-                    autoHeight
+                    className={classes.datagrid}
+                    //autoHeight
                     autoPageSize
                     rows={buildRows(table?.columns ?? [], table?.rows ?? [])}
                     columns={buildColumnsDefinition(table?.columns ?? [])}
+                    rowsPerPageOptions={[5, 10, 25]}
                 />
             </div>
             {!newRowOpened && (

@@ -1,5 +1,3 @@
-import { stringNumberComparer } from "@material-ui/data-grid";
-import fetchMock from "fetch-mock";
 import {
     Database,
     DatabaseTable,

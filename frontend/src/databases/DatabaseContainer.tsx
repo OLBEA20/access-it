@@ -21,11 +21,16 @@ const useStyle = makeStyles((theme: Theme) => ({
         flexDirection: "column",
         padding: theme.spacing(2),
         minWidth: 300,
+        maxHeight: `calc(100% - 4 * ${theme.spacing(2)}px)`,
         alignItems: "flex-start",
     },
     title: {
         display: "flex",
         alignItems: "center",
+    },
+    tables: {
+        overflowY: "auto",
+        width: "100%",
     },
     actions: {
         width: "100%",
@@ -55,7 +60,7 @@ export function DatabaseContainer() {
                 <Typography variant="h4">Tables</Typography>
             </div>
             <Divider />
-            <List dense>
+            <List dense className={classes.tables}>
                 {tables.map((name) => (
                     <ListItem
                         key={name}
