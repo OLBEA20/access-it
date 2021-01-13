@@ -2,17 +2,50 @@ import React, { useEffect, useState } from "react";
 import { insertRowInDatabaseTable, readDatabaseTable } from "../api/api";
 import { DatabaseTable } from "../api/models";
 import { useParams } from "react-router-dom";
-import { ColDef, DataGrid, RowModel, RowsProp } from "@material-ui/data-grid";
-import { Button, makeStyles, Theme, Typography } from "@material-ui/core";
+import {
+    CellClassParams,
+    ColDef,
+    DataGrid,
+    RowModel,
+    RowsProp,
+} from "@material-ui/data-grid";
+import {
+    Button,
+    makeStyles,
+    Paper,
+    Theme,
+    Typography,
+} from "@material-ui/core";
 import { NewRowForm } from "./NewRowForm";
+import clsx from "clsx";
 
 const useStyle = makeStyles((theme: Theme) => ({
     table: {
-        //height: 300,
         flexGrow: 1,
-        maxHeight: 800,
     },
-    datagrid: {},
+    tableContainer: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        padding: theme.spacing(2),
+    },
+    header: {
+        backgroundColor: theme.palette.primary.light,
+        width: "auto",
+    },
+    row: {
+        fontWeight: theme.typography.fontWeightBold,
+    },
+    pairRow: {
+        backgroundColor: theme.palette.grey[100],
+    },
+    newRowContainer: {
+        marginTop: theme.spacing(2),
+        padding: theme.spacing(2),
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+    },
     root: {
         width: "100%",
         height: `calc(100% - 2 * ${theme.spacing(2)}px)`,
@@ -34,48 +67,75 @@ export function DatabaseTableContainer() {
 
     return (
         <div className={classes.root}>
-            <Typography variant="h4" color="textSecondary" gutterBottom>
-                {tableName}
-            </Typography>
-            <div className={classes.table}>
-                <DataGrid
-                    className={classes.datagrid}
-                    //autoHeight
-                    autoPageSize
-                    rows={buildRows(table?.columns ?? [], table?.rows ?? [])}
-                    columns={buildColumnsDefinition(table?.columns ?? [])}
-                    rowsPerPageOptions={[5, 10, 25]}
-                />
-            </div>
-            {!newRowOpened && (
-                <Button onClick={() => setNewRowOpened(true)}>add row</Button>
-            )}
-            {newRowOpened && (
-                <NewRowForm
-                    columns={table?.columns ?? []}
-                    onCancel={() => setNewRowOpened(false)}
-                    onSubmit={(values) => {
-                        insertRowInDatabaseTable(
-                            databaseName,
-                            tableName,
-                            Object.entries(values).map(([key, value]) => [
-                                key,
-                                value,
-                            ])
-                        );
-                        setNewRowOpened(false);
-                    }}
-                />
-            )}
+            <Paper className={classes.tableContainer}>
+                <Typography variant="h4" color="textSecondary" gutterBottom>
+                    {tableName}
+                </Typography>
+                <div className={classes.table}>
+                    <DataGrid
+                        autoPageSize
+                        rows={buildRows(
+                            table?.columns ?? [],
+                            table?.rows ?? []
+                        )}
+                        columns={buildColumnsDefinition(
+                            table?.columns ?? [],
+                            classes.header,
+                            (params: CellClassParams) =>
+                                clsx(
+                                    classes.row,
+                                    (params.rowIndex ?? 0) % 2 === 0
+                                        ? classes.pairRow
+                                        : undefined
+                                )
+                        )}
+                    />
+                </div>
+            </Paper>
+            <Paper className={classes.newRowContainer}>
+                {!newRowOpened && (
+                    <Button
+                        onClick={() => setNewRowOpened(true)}
+                        variant="contained"
+                        disableElevation
+                        color="primary"
+                    >
+                        add row
+                    </Button>
+                )}
+                {newRowOpened && (
+                    <NewRowForm
+                        columns={table?.columns ?? []}
+                        onCancel={() => setNewRowOpened(false)}
+                        onSubmit={(values) => {
+                            insertRowInDatabaseTable(
+                                databaseName,
+                                tableName,
+                                Object.entries(values).map(([key, value]) => [
+                                    key,
+                                    value,
+                                ])
+                            );
+                            setNewRowOpened(false);
+                        }}
+                    />
+                )}
+            </Paper>
         </div>
     );
 }
 
-function buildColumnsDefinition(columns: string[]): ColDef[] {
+function buildColumnsDefinition(
+    columns: string[],
+    headerClassName: string,
+    getCellClassName: (params: CellClassParams) => string
+): ColDef[] {
     return columns.map((column) => ({
         field: column,
+        flex: 1,
         headerName: column,
-        width: 200,
+        headerClassName,
+        cellClassName: getCellClassName,
     }));
 }
 
