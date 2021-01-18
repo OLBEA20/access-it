@@ -5,7 +5,11 @@ body {
         "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #d9d8d4;
+    background-color: #e6e5e1;
+}
+
+.MuiDataGrid-row.Mui-odd {
+    background-color: #faf9f5;
 }
 
 code {

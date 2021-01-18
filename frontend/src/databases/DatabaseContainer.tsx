@@ -21,7 +21,7 @@ const useStyle = makeStyles((theme: Theme) => ({
         flexDirection: "column",
         padding: theme.spacing(2),
         minWidth: 300,
-        maxHeight: `calc(100% - 4 * ${theme.spacing(2)}px)`,
+        maxHeight: `calc(100% - 2 * ${theme.spacing(2)}px)`,
         alignItems: "flex-start",
     },
     title: {
@@ -50,7 +50,7 @@ export function DatabaseContainer() {
         listDatabaseTables(databaseName).then(({ tables }) =>
             setTables(tables)
         );
-    }, []);
+    }, [databaseName]);
 
     return (
         <Paper className={classes.root} variant="outlined" elevation={0}>

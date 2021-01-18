@@ -17,7 +17,6 @@ import {
     Typography,
 } from "@material-ui/core";
 import { NewRowForm } from "./NewRowForm";
-import clsx from "clsx";
 
 const useStyle = makeStyles((theme: Theme) => ({
     table: {
@@ -48,8 +47,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     },
     root: {
         width: "100%",
-        height: `calc(100% - 2 * ${theme.spacing(2)}px)`,
-        padding: theme.spacing(2),
+        height: "100%",
         display: "flex",
         flexDirection: "column",
     },
@@ -68,11 +66,12 @@ export function DatabaseTableContainer() {
     return (
         <div className={classes.root}>
             <Paper className={classes.tableContainer}>
-                <Typography variant="h4" color="textSecondary" gutterBottom>
+                <Typography variant="h5" color="textSecondary" gutterBottom>
                     {tableName}
                 </Typography>
                 <div className={classes.table}>
                     <DataGrid
+                        showToolbar
                         autoPageSize
                         rows={buildRows(
                             table?.columns ?? [],
@@ -81,13 +80,7 @@ export function DatabaseTableContainer() {
                         columns={buildColumnsDefinition(
                             table?.columns ?? [],
                             classes.header,
-                            (params: CellClassParams) =>
-                                clsx(
-                                    classes.row,
-                                    (params.rowIndex ?? 0) % 2 === 0
-                                        ? classes.pairRow
-                                        : undefined
-                                )
+                            (params: CellClassParams) => classes.row
                         )}
                     />
                 </div>
