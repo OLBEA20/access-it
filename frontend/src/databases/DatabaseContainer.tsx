@@ -59,7 +59,7 @@ export function DatabaseContainer() {
                 &nbsp;&nbsp;
                 <Typography variant="h4">Tables</Typography>
             </div>
-            <Divider />
+            <Divider style={{ width: "100%" }} />
             <List dense className={classes.tables}>
                 {tables.map((name) => (
                     <ListItem

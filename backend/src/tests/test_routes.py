@@ -1,4 +1,5 @@
 import os
+from tempfile import TemporaryFile
 from src.insert_row import TableRow
 from src.read_table import TableSchema
 from unittest.mock import ANY, Mock, create_autospec
@@ -33,29 +34,49 @@ SOME_COLUMNS = ["column_a", "column_b"]
 
 
 class TestCreate:
-    def test_whenCreatingDatabase_thenDatabaseIsCreateInTheCorrectDirectory(
+    def test_givenNoFile_whenCreatingDatabase_thenDatabaseIsCreateInTheCorrectDirectory(
         self, test_client: TestClient, mocked_create_access_database
     ):
-        test_client.post("/databases", json={"name": A_DATABASE_NAME})
+        test_client.put(f"/databases/{A_DATABASE_NAME}")
 
         mocked_create_access_database.assert_called_once_with(
             os.path.join(root_directory, f"../databases/{A_DATABASE_NAME}.mdb")
         )
 
+    def test_givenAFile_whenCreatingDatabase_thenFileIsWrittenAsNewDatabase(
+        self, test_client: TestClient, mocked_write_database_file: Mock
+    ):
+        a_database_file = b"yolo"
+        with TemporaryFile() as file:
+            file.write(a_database_file)
+            file.seek(0)
+
+            files = {"database_file": ("database.mdb", file.read())}
+
+            response = test_client.put(
+                f"/databases/{A_DATABASE_NAME}",
+                files=files,
+            )
+
+            assert response.status_code == HTTP_201_CREATED
+            mocked_write_database_file.assert_called_once_with(
+                A_DATABASE_NAME, a_database_file
+            )
+
     def test_whenCreatingDatabase_thenDatabaseNameShouldBeReturned(
         self, test_client: TestClient, mocked_create_access_database
     ):
-        response = test_client.post("/databases", json={"name": A_DATABASE_NAME})
+        response = test_client.put(f"/databases/{A_DATABASE_NAME}")
 
         assert response.status_code == HTTP_201_CREATED
-        assert response.json()["name"] == f"{A_DATABASE_NAME}.mdb"
+        assert response.json()["name"] == f"{A_DATABASE_NAME}"
 
     def test_givenDatabaseAlreadyExist_thenConflict(
         self, test_client: TestClient, mocked_create_access_database
     ):
         mocked_create_access_database.side_effect = AccessDatabaseAlreadyExist
 
-        response = test_client.post("/databases", json={"name": A_DATABASE_NAME})
+        response = test_client.put(f"/databases/{A_DATABASE_NAME}")
 
         assert response.status_code == HTTP_409_CONFLICT
 
@@ -212,3 +233,8 @@ def mocked_read_table(mocker):
 @pytest.fixture
 def mocked_insert_row(mocker):
     return mocker.patch("src.routes.insert_row")
+
+
+@pytest.fixture
+def mocked_write_database_file(mocker) -> Mock:
+    return mocker.patch("src.routes.write_database_file")

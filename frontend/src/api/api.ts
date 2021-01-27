@@ -13,9 +13,8 @@ export function listDatabases(): Promise<ListDabatasesResponse> {
 }
 
 export function createDatabase(name: string): Promise<Database> {
-    return fetch("http://localhost:8000/databases", {
-        method: "Post",
-        body: JSON.stringify({ name }),
+    return fetch(`http://localhost:8000/databases/${name}`, {
+        method: "Put",
     }).then((response) =>
         succeeded(response) ? response.json() : Promise.reject()
     );

@@ -4,9 +4,11 @@ import { insertRowInDatabaseTable, readDatabaseTable } from "../../api/api";
 import { DatabaseTableContainer } from "../DatabaseTableContainer";
 import { useParams } from "react-router-dom";
 import { clickButton, typeText } from "../../commons/fireEventUtils";
+import { useWindowSize } from "../../utils/useWindowSize";
 
 jest.mock("react-router-dom");
 jest.mock("../../api/api");
+jest.mock("../../utils/useWindowSize");
 
 const A_TABLE = {
     name: "table_name",
@@ -26,6 +28,10 @@ describe("<DatabaseTableContainer />", () => {
             tableName: "table",
         });
         (readDatabaseTable as jest.Mock).mockResolvedValue(A_TABLE);
+        (useWindowSize as jest.Mock).mockReturnValue({
+            width: 150,
+            height: 150,
+        });
         await act(async () => {
             render(<DatabaseTableContainer />);
         });

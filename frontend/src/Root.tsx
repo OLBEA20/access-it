@@ -15,6 +15,7 @@ const theme = createMuiTheme({
             light: "#eb84fb",
         },
     },
+    mixins: { toolbar: { height: 64 } },
 });
 
 export function Root() {

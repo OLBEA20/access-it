@@ -10,6 +10,7 @@ pydantic = "^1.7.3"
 fastapi = "^0.62.0"
 JayDeBeApi = "^1.2.3"
 pytest-mock = "^3.3.1"
+python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.0"

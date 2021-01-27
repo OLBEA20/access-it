@@ -1,21 +1,22 @@
 import os
-from src.insert_row import TableRow, insert_row
-
-from starlette.responses import Response
-from src.read_table import TableSchema, read_table
-from typing import List
+from typing import List, Optional
 
 from fastapi import HTTPException
+from fastapi.datastructures import UploadFile
+from fastapi.params import File
 from fastapi.routing import APIRouter
 from pydantic.main import BaseModel
 from starlette import status
+from starlette.responses import Response
 
 from src import root_directory
 from src.access_database_already_exist import AccessDatabaseAlreadyExist
 from src.access_database_does_not_exist import AccessDatabaseDoesNotExist
 from src.create_table import CreateDatabaseTableSchema, create_table
 from src.database_connection import connect_to_database, create_access_database
+from src.insert_row import TableRow, insert_row
 from src.list_tables import DatabaseTablesSchema, list_tables
+from src.read_table import TableSchema, read_table
 
 databases = APIRouter()
 
@@ -30,16 +31,21 @@ class CreateDatabaseResponse(BaseModel):
     name: str
 
 
-@databases.post("/databases", status_code=status.HTTP_201_CREATED)
-def create_database(request: CreateDatabaseRequest) -> CreateDatabaseResponse:
+@databases.put("/databases/{name}", status_code=status.HTTP_201_CREATED)
+def create_database(
+    name, database_file: Optional[bytes] = File(None)
+) -> CreateDatabaseResponse:
     try:
-        create_access_database(os.path.join(databases_directory, f"{request.name}.mdb"))
+        if database_file is not None:
+            write_database_file(name, database_file)
+        else:
+            create_access_database(os.path.join(databases_directory, f"{name}"))
     except AccessDatabaseAlreadyExist:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Access database already exist"
         )
 
-    return CreateDatabaseResponse(name=f"{request.name}.mdb")
+    return CreateDatabaseResponse(name=f"{name}.mdb")
 
 
 @databases.post("/databases/{name}/tables", status_code=status.HTTP_204_NO_CONTENT)
@@ -115,3 +121,8 @@ def list_databases() -> ListDatabasesResponse:
             if os.path.isfile(os.path.join(databases_directory, file))
         ]
     )
+
+
+def write_database_file(filename: str, database_file: bytes) -> None:
+    with open(os.path.join(databases_directory, f"{filename}.mdb", "w")) as file:
+        file.write(database_file)

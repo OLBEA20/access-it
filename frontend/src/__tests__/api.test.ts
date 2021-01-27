@@ -43,11 +43,14 @@ describe("api", () => {
             fetchMock.reset();
         });
 
-        it("should post to backend the new database name", async () => {
-            fetchMock.post("http://localhost:8000/databases", {
-                status: 204,
-                body: { name: A_DATABASE_NAME },
-            });
+        it("should put to backend the new database name", async () => {
+            fetchMock.put(
+                `http://localhost:8000/databases/${A_DATABASE_NAME}`,
+                {
+                    status: 204,
+                    body: { name: A_DATABASE_NAME },
+                }
+            );
 
             const newDatabase = await createDatabase(A_DATABASE_NAME);
 
@@ -56,9 +59,12 @@ describe("api", () => {
 
         describe("on error conflict", () => {
             it("should raise", () => {
-                fetchMock.post("http://localhost:8000/databases", {
-                    status: 409,
-                });
+                fetchMock.put(
+                    `http://localhost:8000/databases/${A_DATABASE_NAME}`,
+                    {
+                        status: 409,
+                    }
+                );
 
                 expect.assertions(1);
                 expect(createDatabase(A_DATABASE_NAME)).rejects.toBeUndefined();

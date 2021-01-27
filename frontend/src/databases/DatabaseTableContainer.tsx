@@ -17,6 +17,7 @@ import {
     Typography,
 } from "@material-ui/core";
 import { NewRowForm } from "./NewRowForm";
+import { useWindowSize } from "../utils/useWindowSize";
 
 const useStyle = makeStyles((theme: Theme) => ({
     table: {
@@ -30,7 +31,6 @@ const useStyle = makeStyles((theme: Theme) => ({
     },
     header: {
         backgroundColor: theme.palette.primary.light,
-        width: "auto",
     },
     row: {
         fontWeight: theme.typography.fontWeightBold,
@@ -46,7 +46,6 @@ const useStyle = makeStyles((theme: Theme) => ({
         justifyContent: "center",
     },
     root: {
-        width: "100%",
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -58,6 +57,7 @@ export function DatabaseTableContainer() {
     const classes = useStyle();
     const [table, setTable] = useState<DatabaseTable | undefined>();
     const [newRowOpened, setNewRowOpened] = useState<boolean>(false);
+    const { width } = useWindowSize();
 
     useEffect(() => {
         readDatabaseTable(databaseName, tableName).then(setTable);
@@ -65,12 +65,13 @@ export function DatabaseTableContainer() {
 
     return (
         <div className={classes.root}>
-            <Paper className={classes.tableContainer}>
+            <Paper className={classes.tableContainer} elevation={0}>
                 <Typography variant="h5" color="textSecondary" gutterBottom>
                     {tableName}
                 </Typography>
                 <div className={classes.table}>
                     <DataGrid
+                        disableColumnSelector={false}
                         showToolbar
                         autoPageSize
                         rows={buildRows(
@@ -79,13 +80,14 @@ export function DatabaseTableContainer() {
                         )}
                         columns={buildColumnsDefinition(
                             table?.columns ?? [],
+                            width ?? 0,
                             classes.header,
-                            (params: CellClassParams) => classes.row
+                            () => classes.row
                         )}
                     />
                 </div>
             </Paper>
-            <Paper className={classes.newRowContainer}>
+            <Paper className={classes.newRowContainer} elevation={0}>
                 {!newRowOpened && (
                     <Button
                         onClick={() => setNewRowOpened(true)}
@@ -120,12 +122,15 @@ export function DatabaseTableContainer() {
 
 function buildColumnsDefinition(
     columns: string[],
+    windowWith: number,
     headerClassName: string,
     getCellClassName: (params: CellClassParams) => string
 ): ColDef[] {
+    const isWideEnoughtToUseFlex = windowWith / columns.length > 150;
     return columns.map((column) => ({
         field: column,
-        flex: 1,
+        flex: isWideEnoughtToUseFlex ? 1 : undefined,
+        width: !isWideEnoughtToUseFlex ? 150 : undefined,
         headerName: column,
         headerClassName,
         cellClassName: getCellClassName,

@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import { StorageOutlined } from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useMatch, useNavigate } from "react-router-dom";
 import { createDatabase, listDatabases } from "../api/api";
 import { NewResourceInput } from "../commons/components/NewResourceInput";
 import { ROUTES } from "../routes";
@@ -25,9 +25,12 @@ const useStyle = makeStyles((theme: Theme) => ({
         display: "flex",
         flexDirection: "column",
         padding: theme.spacing(2),
+        marginRight: theme.spacing(2),
         minWidth: 300,
     },
-
+    selectedDatabase: {
+        backgroundColor: theme.palette.action.selected,
+    },
     title: {
         display: "flex",
         alignItems: "center",
@@ -38,6 +41,7 @@ export function DatabasesContainer() {
     const classes = useStyle();
     const [databases, setDatabases] = useState<string[]>([]);
     const navigate = useNavigate();
+    const params = useMatch("/databases/:databaseName")?.params;
 
     useEffect(() => {
         listDatabases().then(({ names }) => setDatabases(names));
@@ -60,6 +64,11 @@ export function DatabasesContainer() {
                     {databases.map((name) => (
                         <ListItem
                             key={name}
+                            className={
+                                name === params?.["databaseName"]
+                                    ? classes.selectedDatabase
+                                    : undefined
+                            }
                             button
                             disableGutters
                             data-testid={`database-item`}
