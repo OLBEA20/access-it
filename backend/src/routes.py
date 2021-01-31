@@ -2,7 +2,6 @@ import os
 from typing import List, Optional
 
 from fastapi import HTTPException
-from fastapi.datastructures import UploadFile
 from fastapi.params import File
 from fastapi.routing import APIRouter
 from pydantic.main import BaseModel
@@ -31,6 +30,21 @@ class CreateDatabaseResponse(BaseModel):
     name: str
 
 
+class ListDatabasesResponse(BaseModel):
+    names: List[str]
+
+
+@databases.get("/databases", status_code=status.HTTP_200_OK)
+def list_databases() -> ListDatabasesResponse:
+    return ListDatabasesResponse(
+        names=[
+            file.replace(".mdb", "")
+            for file in os.listdir(databases_directory)
+            if os.path.isfile(os.path.join(databases_directory, file))
+        ]
+    )
+
+
 @databases.put("/databases/{name}", status_code=status.HTTP_201_CREATED)
 def create_database(
     name, database_file: Optional[bytes] = File(None)
@@ -39,13 +53,25 @@ def create_database(
         if database_file is not None:
             write_database_file(name, database_file)
         else:
-            create_access_database(os.path.join(databases_directory, f"{name}"))
+            create_access_database(os.path.join(databases_directory, f"{name}.mdb"))
     except AccessDatabaseAlreadyExist:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Access database already exist"
         )
 
-    return CreateDatabaseResponse(name=f"{name}.mdb")
+    return CreateDatabaseResponse(name=f"{name}")
+
+
+@databases.delete("/databases/{name}", status_code=status.HTTP_200_OK)
+def delete_database(name) -> ListDatabasesResponse:
+    remove_database_file(name)
+    return ListDatabasesResponse(
+        names=[
+            file.replace(".mdb", "")
+            for file in os.listdir(databases_directory)
+            if os.path.isfile(os.path.join(databases_directory, file))
+        ]
+    )
 
 
 @databases.post("/databases/{name}/tables", status_code=status.HTTP_204_NO_CONTENT)
@@ -108,21 +134,10 @@ def insert_database_table_row(name: str, table_name: str, row: TableRow) -> Tabl
         )
 
 
-class ListDatabasesResponse(BaseModel):
-    names: List[str]
-
-
-@databases.get("/databases", status_code=status.HTTP_200_OK)
-def list_databases() -> ListDatabasesResponse:
-    return ListDatabasesResponse(
-        names=[
-            file.replace(".mdb", "")
-            for file in os.listdir(databases_directory)
-            if os.path.isfile(os.path.join(databases_directory, file))
-        ]
-    )
-
-
 def write_database_file(filename: str, database_file: bytes) -> None:
     with open(os.path.join(databases_directory, f"{filename}.mdb", "w")) as file:
         file.write(database_file)
+
+
+def remove_database_file(filename: str) -> None:
+    os.remove(os.path.join(databases_directory, f"{filename}.mdb"))

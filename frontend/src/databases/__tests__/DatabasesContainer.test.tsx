@@ -1,6 +1,12 @@
 import React from "react";
-import { act, render, screen, waitFor } from "@testing-library/react";
-import { createDatabase, listDatabases } from "../../api/api";
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from "@testing-library/react";
+import { createDatabase, deleteDatabase, listDatabases } from "../../api/api";
 import { DatabasesContainer } from "../DatabasesContainer";
 import { clickButton, typeText } from "../../commons/fireEventUtils";
 import { useNavigate } from "react-router-dom";
@@ -30,9 +36,7 @@ describe("<DatabasesContainer />", () => {
 
             await waitFor(() =>
                 SOME_DATABASES_NAME.forEach((name) =>
-                    expect(
-                        screen.getByText(name, { exact: false })
-                    ).toBeInTheDocument()
+                    expect(screen.getByText(name)).toBeInTheDocument()
                 )
             );
         });
@@ -47,13 +51,17 @@ describe("<DatabasesContainer />", () => {
 
         describe("on success", () => {
             beforeEach(async () => {
-                clickButton({ name: /addResource/i });
-                typeText(NEW_DATABASE).in(screen.getByRole("textbox"));
-                await act(async () => clickButton({ name: /save/i }));
+                typeText(NEW_DATABASE).in(
+                    screen.getByRole("textbox", { name: /database name/i })
+                );
+                await act(async () => clickButton({ name: /create/i }));
             });
 
             it("should create a new database", () => {
-                expect(createDatabase).toHaveBeenCalledWith(NEW_DATABASE);
+                expect(createDatabase).toHaveBeenCalledWith(
+                    NEW_DATABASE,
+                    undefined
+                );
             });
 
             it("should append it to the database list", async () => {
@@ -66,9 +74,10 @@ describe("<DatabasesContainer />", () => {
         describe("on failure", () => {
             it("should not append anything", async () => {
                 (createDatabase as jest.Mock).mockRejectedValue(undefined);
-                clickButton({ name: /addResource/i });
-                typeText(NEW_DATABASE).in(screen.getByRole("textbox"));
-                clickButton({ name: /save/i });
+                typeText(NEW_DATABASE).in(
+                    screen.getByRole("textbox", { name: /database name/i })
+                );
+                clickButton({ name: /create/i });
 
                 await waitFor(() =>
                     expect(screen.getAllByTestId("database-item")).toHaveLength(
@@ -93,6 +102,44 @@ describe("<DatabasesContainer />", () => {
                 expect(useNavigate()).toHaveBeenCalledWith(
                     ROUTES.database(SOME_DATABASES_NAME[0])
                 )
+            );
+        });
+    });
+
+    describe("on delete database", () => {
+        beforeEach(() => {
+            (deleteDatabase as jest.Mock).mockResolvedValue({
+                names: SOME_DATABASES_NAME.slice(1),
+            });
+        });
+
+        it("should delete database", async () => {
+            render(<DatabasesContainer />);
+
+            userEvent.hover(await screen.findByText(SOME_DATABASES_NAME[0]));
+            clickButton({ name: `delete ${SOME_DATABASES_NAME[0]}` });
+
+            await waitFor(() =>
+                expect(deleteDatabase).toHaveBeenLastCalledWith(
+                    SOME_DATABASES_NAME[0]
+                )
+            );
+        });
+
+        it("should update databases list", async () => {
+            (deleteDatabase as jest.Mock).mockResolvedValue({
+                names: SOME_DATABASES_NAME.slice(1),
+            });
+
+            render(<DatabasesContainer />);
+
+            userEvent.hover(await screen.findByText(SOME_DATABASES_NAME[0]));
+            clickButton({ name: `delete ${SOME_DATABASES_NAME[0]}` });
+
+            await waitFor(() =>
+                expect(
+                    screen.queryByText(SOME_DATABASES_NAME[0])
+                ).not.toBeInTheDocument()
             );
         });
     });

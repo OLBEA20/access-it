@@ -12,9 +12,21 @@ export function listDatabases(): Promise<ListDabatasesResponse> {
     );
 }
 
-export function createDatabase(name: string): Promise<Database> {
+export function createDatabase(
+    name: string,
+    databaseFile?: File
+): Promise<Database> {
     return fetch(`http://localhost:8000/databases/${name}`, {
         method: "Put",
+        body: databaseFile,
+    }).then((response) =>
+        succeeded(response) ? response.json() : Promise.reject()
+    );
+}
+
+export function deleteDatabase(name: string): Promise<ListDabatasesResponse> {
+    return fetch(`http://localhost:8000/databases/${name}`, {
+        method: "Delete",
     }).then((response) =>
         succeeded(response) ? response.json() : Promise.reject()
     );

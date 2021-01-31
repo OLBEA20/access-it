@@ -81,6 +81,16 @@ class TestCreate:
         assert response.status_code == HTTP_409_CONFLICT
 
 
+class TestDeleteDatabase:
+    def test_thenDatabaseIsRemovedFromFileSystem(
+        self, test_client: TestClient, mocked_remove_database_file: Mock
+    ):
+        response = test_client.delete(f"/databases/{A_DATABASE_NAME}")
+
+        assert response.status_code == HTTP_200_OK
+        mocked_remove_database_file.assert_called_once_with(A_DATABASE_NAME)
+
+
 class TestCreateTable:
     def test_givenDatabaesDoesNotExist_thenNotFound(
         self, test_client: TestClient, mocked_connect_to_database: Mock
@@ -238,3 +248,8 @@ def mocked_insert_row(mocker):
 @pytest.fixture
 def mocked_write_database_file(mocker) -> Mock:
     return mocker.patch("src.routes.write_database_file")
+
+
+@pytest.fixture
+def mocked_remove_database_file(mocker) -> Mock:
+    return mocker.patch("src.routes.remove_database_file")

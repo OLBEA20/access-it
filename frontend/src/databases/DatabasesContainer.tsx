@@ -1,8 +1,6 @@
 import {
     Divider,
     List,
-    ListItem,
-    ListItemText,
     makeStyles,
     Paper,
     Theme,
@@ -10,10 +8,10 @@ import {
 } from "@material-ui/core";
 import { StorageOutlined } from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
-import { Outlet, useMatch, useNavigate } from "react-router-dom";
-import { createDatabase, listDatabases } from "../api/api";
-import { NewResourceInput } from "../commons/components/NewResourceInput";
-import { ROUTES } from "../routes";
+import { Outlet, useMatch } from "react-router-dom";
+import { createDatabase, deleteDatabase, listDatabases } from "../api/api";
+import { DatabaseRow } from "./DatabaseRow";
+import { NewDatabaseForm } from "./NewDatabaseForm";
 
 const useStyle = makeStyles((theme: Theme) => ({
     root: {
@@ -21,16 +19,26 @@ const useStyle = makeStyles((theme: Theme) => ({
         alignItems: "flex-start",
         height: "100%",
     },
-    databases: {
+    databasesContainer: {
         display: "flex",
         flexDirection: "column",
-        padding: theme.spacing(2),
+        maxWidth: 330,
         marginRight: theme.spacing(2),
-        minWidth: 300,
+        height: "100%",
     },
-    selectedDatabase: {
-        backgroundColor: theme.palette.action.selected,
+    databases: {
+        display: "flex",
+        overflow: "auto",
+        flexDirection: "column",
+        padding: theme.spacing(2),
     },
+    list: {
+        overflow: "auto",
+    },
+    newDatabaseForm: {
+        marginTop: theme.spacing(2),
+    },
+
     title: {
         display: "flex",
         alignItems: "center",
@@ -40,7 +48,6 @@ const useStyle = makeStyles((theme: Theme) => ({
 export function DatabasesContainer() {
     const classes = useStyle();
     const [databases, setDatabases] = useState<string[]>([]);
-    const navigate = useNavigate();
     const params = useMatch("/databases/:databaseName")?.params;
 
     useEffect(() => {
@@ -49,48 +56,44 @@ export function DatabasesContainer() {
 
     return (
         <div className={classes.root}>
-            <Paper
-                className={classes.databases}
-                variant="outlined"
-                elevation={0}
-            >
-                <div className={classes.title}>
-                    <StorageOutlined fontSize="large" />
-                    &nbsp;&nbsp;
-                    <Typography variant="h4">Databases</Typography>
-                </div>
-                <Divider />
-                <List dense>
-                    {databases.map((name) => (
-                        <ListItem
-                            key={name}
-                            className={
-                                name === params?.["databaseName"]
-                                    ? classes.selectedDatabase
-                                    : undefined
-                            }
-                            button
-                            disableGutters
-                            data-testid={`database-item`}
-                            onClick={() => navigate(ROUTES.database(name))}
-                        >
-                            <ListItemText>{name}</ListItemText>
-                        </ListItem>
-                    ))}
-                </List>
-                <NewResourceInput
-                    onSave={(name) =>
-                        createDatabase(name)
+            <div className={classes.databasesContainer}>
+                <Paper
+                    className={classes.databases}
+                    variant="outlined"
+                    elevation={0}
+                >
+                    <div className={classes.title}>
+                        <StorageOutlined fontSize="large" />
+                        &nbsp;&nbsp;
+                        <Typography variant="h4">Databases</Typography>
+                    </div>
+                    <Divider />
+                    <List dense className={classes.list}>
+                        {databases.map((name) => (
+                            <DatabaseRow
+                                key={name}
+                                name={name}
+                                selected={name == params?.["databaseName"]}
+                                onDelete={() =>
+                                    deleteDatabase(name).then(({ names }) =>
+                                        setDatabases(names)
+                                    )
+                                }
+                            />
+                        ))}
+                    </List>
+                </Paper>
+                <NewDatabaseForm
+                    className={classes.newDatabaseForm}
+                    onCreate={(databaseName, databaseFile) =>
+                        createDatabase(databaseName, databaseFile)
                             .then(({ name }) =>
-                                setDatabases((databases) => [
-                                    ...databases,
-                                    name,
-                                ])
+                                setDatabases((names) => [...names, name])
                             )
                             .catch(silenceError)
                     }
                 />
-            </Paper>
+            </div>
             <Outlet />
         </div>
     );
