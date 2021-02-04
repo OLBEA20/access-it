@@ -54,7 +54,7 @@ def create_database(
             write_database_file(name, database_file)
         else:
             create_access_database(os.path.join(databases_directory, f"{name}.mdb"))
-    except AccessDatabaseAlreadyExist:
+    except (AccessDatabaseAlreadyExist, FileExistsError):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Access database already exist"
         )
@@ -135,7 +135,7 @@ def insert_database_table_row(name: str, table_name: str, row: TableRow) -> Tabl
 
 
 def write_database_file(filename: str, database_file: bytes) -> None:
-    with open(os.path.join(databases_directory, f"{filename}.mdb", "w")) as file:
+    with open(os.path.join(databases_directory, f"{filename}.mdb"), "xb") as file:
         file.write(database_file)
 
 

@@ -16,9 +16,14 @@ export function createDatabase(
     name: string,
     databaseFile?: File
 ): Promise<Database> {
+    let data;
+    if (databaseFile != null) {
+        data = new FormData();
+        data.append("database_file", databaseFile);
+    }
     return fetch(`http://localhost:8000/databases/${name}`, {
         method: "Put",
-        body: databaseFile,
+        body: data,
     }).then((response) =>
         succeeded(response) ? response.json() : Promise.reject()
     );

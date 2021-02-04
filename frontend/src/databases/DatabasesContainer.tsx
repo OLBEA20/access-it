@@ -73,7 +73,7 @@ export function DatabasesContainer() {
                             <DatabaseRow
                                 key={name}
                                 name={name}
-                                selected={name == params?.["databaseName"]}
+                                selected={name === params?.["databaseName"]}
                                 onDelete={() =>
                                     deleteDatabase(name).then(({ names }) =>
                                         setDatabases(names)
