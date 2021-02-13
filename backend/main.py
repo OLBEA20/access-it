@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.routes import databases
 
-origins = ["http://localhost:3000"]
+origins = ["http://localhost:3000", "https://access-it.me"]
 
 application = FastAPI()
 application.add_middleware(

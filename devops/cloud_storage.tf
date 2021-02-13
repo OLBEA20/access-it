@@ -54,8 +54,14 @@ resource "google_dns_record_set" "cdn_dns_a_record" {
   rrdatas      = [google_compute_global_address.cdn_public_address.address]
 }
 
-resource "google_storage_bucket_iam_member" "all_users_viewers" {
+resource "google_storage_bucket_iam_member" "all_users_viewers_legacy" {
   bucket = google_storage_bucket.frontend.name
   role   = "roles/storage.legacyObjectReader"
+  member = "allUsers"
+}
+
+resource "google_storage_bucket_iam_member" "all_users_viewers" {
+  bucket = google_storage_bucket.frontend.name
+  role   = "roles/storage.objectViewer"
   member = "allUsers"
 }
