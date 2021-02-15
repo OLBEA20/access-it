@@ -1,7 +1,5 @@
 import os
 from tempfile import TemporaryFile
-from src.insert_row import TableRow
-from src.read_table import TableSchema
 from unittest.mock import ANY, Mock, create_autospec
 
 import pytest
@@ -12,6 +10,9 @@ from src import root_directory
 from src.access_database_already_exist import AccessDatabaseAlreadyExist
 from src.access_database_does_not_exist import AccessDatabaseDoesNotExist
 from src.create_table import ColumnType, CreateDatabaseTableSchema
+from src.describe_table import ColumnDescription, TableDescription
+from src.insert_row import TableRow
+from src.read_table import TableSchema
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -31,6 +32,26 @@ A_CREATE_TABLE_REQUEST = CreateDatabaseTableSchema(
 )
 SOME_ROWS = [["a", "b"], ["c", "d"]]
 SOME_COLUMNS = ["column_a", "column_b"]
+SOME_COLUMNS_DESCRIPTION = [
+    ColumnDescription(
+        name="column_a",
+        type_code="FLOAT",
+        display_size=23,
+        internal_size=23,
+        precision=0,
+        scale=0,
+        nullable=False,
+    ),
+    ColumnDescription(
+        name="column_b",
+        type_code="VARCHAR",
+        display_size=255,
+        internal_size=255,
+        precision=0,
+        scale=0,
+        nullable=False,
+    ),
+]
 
 
 class TestCreate:
@@ -178,6 +199,37 @@ class TestReadDatabaseTable:
         assert response.json()["columns"] == SOME_COLUMNS
 
 
+class TestDescribeDatabaseTable:
+    def test_givenDatabaseDoesNotExist_whenDescribingTable_thenNotFound(
+        self, test_client: TestClient, mocked_connect_to_database: Mock
+    ):
+        mocked_connect_to_database.side_effect = AccessDatabaseDoesNotExist
+
+        response = test_client.get(
+            f"/databases/{A_DATABASE_NAME}/tables/{A_TABLE_NAME}/description"
+        )
+
+        assert response.status_code == HTTP_404_NOT_FOUND
+
+    def test_whenDescribiningDatabaseTable_thenColumnsDescriptionAreReturned(
+        self,
+        test_client: TestClient,
+        mocked_connect_to_database: Mock,
+        mocked_describe_table: Mock,
+    ):
+        mocked_connect_to_database.return_value = create_autospec(Connection)
+        mocked_describe_table.return_value = TableDescription(
+            columns_description=SOME_COLUMNS_DESCRIPTION
+        )
+
+        response = test_client.get(
+            f"/databases/{A_DATABASE_NAME}/tables/{A_TABLE_NAME}/description"
+        )
+
+        assert response.status_code == HTTP_200_OK
+        assert response.json()["columns_description"] == SOME_COLUMNS_DESCRIPTION
+
+
 class TestInsertDatabaseTableRow:
     def test_givenDatabaseDoesNotExist_whenInsertingTableRow_thenNotFound(
         self, test_client: TestClient, mocked_connect_to_database: Mock
@@ -238,6 +290,11 @@ def mocked_list_tables(mocker):
 @pytest.fixture
 def mocked_read_table(mocker):
     return mocker.patch("src.routes.read_table")
+
+
+@pytest.fixture
+def mocked_describe_table(mocker):
+    return mocker.patch("src.routes.describe_table")
 
 
 @pytest.fixture

@@ -19,14 +19,20 @@ def _field_statement(column_description: DatabaseColumnSchema) -> str:
 
 
 class ColumnType(str, Enum):
-    SINGLE = "SINGLE"
+    BINARY = "BINARY"
+    INTEGER = "INTEGER"
+    SINGLE = "FLOAT"
+    DECIMAL = "DECIMAL"
     DOUBLE = "DOUBLE"
     UNSIGNED_BYTE = "UNSIGNED_BYTE"
     LONG = "LONG"
-    TEXT = "TEXT"
+    STRING = "VARCHAR"
+    TEXT = "CHAR"
     LONG_TEXT = "LONG TEXT"
     BOOLEAN = "BOOLEAN"
     DATETIME = "DATETIME"
+    DATE = "DATE"
+    TIME = "TIME"
 
 
 class DatabaseColumnSchema(BaseModel):

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { insertRowInDatabaseTable, readDatabaseTable } from "../api/api";
-import { DatabaseTable } from "../api/models";
+import {
+    describeDatabaseTable,
+    insertRowInDatabaseTable,
+    readDatabaseTable,
+} from "../api/api";
+import { DatabaseTable, TableDescription } from "../api/models";
 import { useParams } from "react-router-dom";
 import {
     CellClassParams,
@@ -11,13 +15,20 @@ import {
 } from "@material-ui/data-grid";
 import {
     Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    IconButton,
     makeStyles,
     Paper,
+    TableBodyClassKey,
     Theme,
     Typography,
 } from "@material-ui/core";
 import { NewRowForm } from "./NewRowForm";
 import { useWindowSize } from "../utils/useWindowSize";
+import { TableDescriptionDialog } from "./TableDescriptionDialog";
+import { DescriptionOutlined } from "@material-ui/icons";
 
 const useStyle = makeStyles((theme: Theme) => ({
     table: {
@@ -28,6 +39,11 @@ const useStyle = makeStyles((theme: Theme) => ({
         display: "flex",
         flexDirection: "column",
         padding: theme.spacing(2),
+    },
+    tableContainerHeader: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
     },
     header: {
         backgroundColor: theme.palette.primary.light,
@@ -56,19 +72,44 @@ export function DatabaseTableContainer() {
     const { databaseName, tableName } = useParams();
     const classes = useStyle();
     const [table, setTable] = useState<DatabaseTable | undefined>();
+    const [tableDescription, setTableDescription] = useState<
+        TableDescription | undefined
+    >();
+    const [tableDescriptionOpen, setTableDescriptionOpen] = useState<boolean>(
+        false
+    );
     const [newRowOpened, setNewRowOpened] = useState<boolean>(false);
     const { width } = useWindowSize();
 
     useEffect(() => {
         readDatabaseTable(databaseName, tableName).then(setTable);
+        describeDatabaseTable(databaseName, tableName).then(
+            setTableDescription
+        );
     }, [databaseName, tableName]);
 
     return (
         <div className={classes.root}>
+            {tableDescription && (
+                <TableDescriptionDialog
+                    open={tableDescriptionOpen}
+                    onClose={() => setTableDescriptionOpen(false)}
+                    tableDescription={tableDescription}
+                />
+            )}
             <Paper className={classes.tableContainer} elevation={0}>
-                <Typography variant="h5" color="textSecondary" gutterBottom>
-                    {tableName}
-                </Typography>
+                <div className={classes.tableContainerHeader}>
+                    <Typography variant="h5" color="textSecondary" gutterBottom>
+                        {tableName}
+                    </Typography>
+                    <IconButton
+                        onClick={() => setTableDescriptionOpen(true)}
+                        aria-label="Description"
+                        color="primary"
+                    >
+                        <DescriptionOutlined />
+                    </IconButton>
+                </div>
                 <div className={classes.table}>
                     <DataGrid
                         disableColumnSelector={false}

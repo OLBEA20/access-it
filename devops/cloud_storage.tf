@@ -4,6 +4,11 @@ resource "google_storage_bucket" "frontend" {
   location      = "US"
   force_destroy = true
 
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "index.html"
+  }
+
   uniform_bucket_level_access = true
 }
 

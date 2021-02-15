@@ -26,13 +26,33 @@ export interface TableColumn {
 }
 
 export enum ColumnType {
-    SINGLE = "SINGLE",
+    SHORT = "SHORT",
+    BINARY = "BINARY",
+    INTEGER = "INTEGER",
+    SINGLE = "FLOAT",
+    DECIMAL = "DECIMAL",
     DOUBLE = "DOUBLE",
     UNSIGNED_BYTE = "UNSIGNED_BYTE",
-    SHORT = "SHORT",
     LONG = "LONG",
-    TEXT = "TEXT",
+    STRING = "VARCHAR",
+    TEXT = "CHAR",
     LONG_TEXT = "LONG TEXT",
     BOOLEAN = "BOOLEAN",
     DATETIME = "DATETIME",
+    DATE = "DATE",
+    TIME = "TIME",
+}
+
+export interface TableDescription {
+    columns_description: ColumnDescription[];
+}
+
+export interface ColumnDescription {
+    name: string;
+    type_code: string;
+    display_size: number;
+    internal_size: number;
+    precision: number;
+    scale: number;
+    nullable: boolean;
 }

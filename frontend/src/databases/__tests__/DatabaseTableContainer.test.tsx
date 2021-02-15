@@ -1,6 +1,10 @@
 import React from "react";
 import { act, render, screen, waitFor } from "@testing-library/react";
-import { insertRowInDatabaseTable, readDatabaseTable } from "../../api/api";
+import {
+    describeDatabaseTable,
+    insertRowInDatabaseTable,
+    readDatabaseTable,
+} from "../../api/api";
 import { DatabaseTableContainer } from "../DatabaseTableContainer";
 import { useParams } from "react-router-dom";
 import { clickButton, typeText } from "../../commons/fireEventUtils";
@@ -19,6 +23,29 @@ const A_TABLE = {
     ],
 };
 
+const A_TABLE_DESCRIPTION = {
+    columns_description: [
+        {
+            name: "column_a",
+            type_code: "VARCHAR",
+            display_size: 255,
+            internal_size: 255,
+            precision: 0,
+            scale: 0,
+            nullable: false,
+        },
+        {
+            name: "column_b",
+            type_code: "FLOAT",
+            display_size: 23,
+            internal_size: 23,
+            precision: 0,
+            scale: 0,
+            nullable: true,
+        },
+    ],
+};
+
 const A_VALUE = "a_value";
 const ANOTHER_VALUE = "another_value";
 describe("<DatabaseTableContainer />", () => {
@@ -28,6 +55,9 @@ describe("<DatabaseTableContainer />", () => {
             tableName: "table",
         });
         (readDatabaseTable as jest.Mock).mockResolvedValue(A_TABLE);
+        (describeDatabaseTable as jest.Mock).mockResolvedValue(
+            A_TABLE_DESCRIPTION
+        );
         (useWindowSize as jest.Mock).mockReturnValue({
             width: 150,
             height: 150,
@@ -143,6 +173,18 @@ describe("<DatabaseTableContainer />", () => {
             expect(
                 await screen.findByRole("button", { name: /add row/i })
             ).toBeInTheDocument();
+        });
+    });
+
+    describe("on description button click", () => {
+        it("should display table description", () => {
+            clickButton({ name: /description/i });
+
+            A_TABLE_DESCRIPTION.columns_description.forEach((description) =>
+                expect(
+                    screen.getByRole("row", { name: description.name })
+                ).toBeInTheDocument()
+            );
         });
     });
 });
