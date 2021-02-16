@@ -5,7 +5,6 @@ import {
     DatabaseTableCreate,
     ListDabatasesResponse,
     ListDatabaseTablesResponse,
-    TableDescription,
 } from "./models";
 
 export function listDatabases(): Promise<ListDabatasesResponse> {
@@ -61,15 +60,6 @@ export function readDatabaseTable(
 ): Promise<DatabaseTable> {
     return fetch(
         buildApiUrl(`databases/${databaseName}/tables/${tableName}`)
-    ).then((response) => response.json());
-}
-
-export function describeDatabaseTable(
-    databaseName: string,
-    tableName: string
-): Promise<TableDescription> {
-    return fetch(
-        buildApiUrl(`databases/${databaseName}/tables/${tableName}/description`)
     ).then((response) => response.json());
 }
 

@@ -1,5 +1,6 @@
 import { Button, makeStyles, TextField, Theme } from "@material-ui/core";
 import React, { useState } from "react";
+import { ColumnDescription } from "../api/models";
 
 const useStyle = makeStyles((theme: Theme) => ({
     root: {
@@ -22,7 +23,7 @@ const useStyle = makeStyles((theme: Theme) => ({
 }));
 
 interface Props {
-    columns: string[];
+    columns: ColumnDescription[];
     onCancel: () => void;
     onSubmit: (values: object) => void;
 }
@@ -30,7 +31,7 @@ interface Props {
 export function NewRowForm({ columns, onCancel, onSubmit }: Props) {
     const classes = useStyle();
     const [values, setValues] = useState(
-        columns.reduce((values, key) => ({ ...values, [key]: "" }), {})
+        columns.reduce((values, key) => ({ ...values, [key.name]: "" }), {})
     );
 
     return (
@@ -44,17 +45,17 @@ export function NewRowForm({ columns, onCancel, onSubmit }: Props) {
             <div className={classes.root}>
                 {columns.map((column) => (
                     <TextField
-                        key={column}
-                        label={column}
-                        value={values[column as keyof typeof values]}
+                        key={column.name}
+                        label={column.name}
+                        value={values[column.name as keyof typeof values]}
                         onChange={(event) =>
                             setValues((prevValues) => ({
                                 ...prevValues,
-                                [column]: event.target.value,
+                                [column.name]: event.target.value,
                             }))
                         }
-                        placeholder={column}
-                        inputProps={{ "aria-label": column }}
+                        placeholder={column.name}
+                        inputProps={{ "aria-label": column.name }}
                     />
                 ))}
             </div>

@@ -13,7 +13,7 @@ import {
 import { CheckOutlined, CloseOutlined } from "@material-ui/icons";
 import clsx from "clsx";
 import React from "react";
-import { TableDescription } from "../api/models";
+import { ColumnDescription } from "../api/models";
 
 const useStyle = makeStyles((theme: Theme) => ({
     tableHead: {
@@ -31,13 +31,13 @@ const useStyle = makeStyles((theme: Theme) => ({
 }));
 
 interface Props {
-    tableDescription: TableDescription;
+    columnsDescription: ColumnDescription[];
     onClose: () => void;
     open: boolean;
 }
 
 export function TableDescriptionDialog({
-    tableDescription,
+    columnsDescription,
     onClose,
     open,
 }: Props) {
@@ -86,60 +86,58 @@ export function TableDescriptionDialog({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {tableDescription.columns_description.map(
-                            (description, index) => {
-                                const className = clsx(
-                                    classes.content,
-                                    index % 2 !== 0 ? classes.odd : undefined
-                                );
-                                return (
-                                    <TableRow
-                                        key={description.name}
-                                        aria-label={description.name}
+                        {columnsDescription.map((description, index) => {
+                            const className = clsx(
+                                classes.content,
+                                index % 2 !== 0 ? classes.odd : undefined
+                            );
+                            return (
+                                <TableRow
+                                    key={description.name}
+                                    aria-label={description.name}
+                                >
+                                    <TableCell className={className}>
+                                        {description.name}
+                                    </TableCell>
+                                    <TableCell className={className}>
+                                        {description.type_code}
+                                    </TableCell>
+                                    <TableCell
+                                        className={className}
+                                        align="right"
                                     >
-                                        <TableCell className={className}>
-                                            {description.name}
-                                        </TableCell>
-                                        <TableCell className={className}>
-                                            {description.type_code}
-                                        </TableCell>
-                                        <TableCell
-                                            className={className}
-                                            align="right"
-                                        >
-                                            {description.display_size}
-                                        </TableCell>
-                                        <TableCell
-                                            className={className}
-                                            align="right"
-                                        >
-                                            {description.internal_size}
-                                        </TableCell>
-                                        <TableCell
-                                            className={className}
-                                            align="right"
-                                        >
-                                            {description.precision}
-                                        </TableCell>
-                                        <TableCell
-                                            className={className}
-                                            align="right"
-                                        >
-                                            {description.scale}
-                                        </TableCell>
-                                        <TableCell className={className}>
-                                            {description.nullable ? (
-                                                <CheckOutlined
-                                                    className={classes.check}
-                                                />
-                                            ) : (
-                                                <CloseOutlined color="error" />
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            }
-                        )}
+                                        {description.display_size}
+                                    </TableCell>
+                                    <TableCell
+                                        className={className}
+                                        align="right"
+                                    >
+                                        {description.internal_size}
+                                    </TableCell>
+                                    <TableCell
+                                        className={className}
+                                        align="right"
+                                    >
+                                        {description.precision}
+                                    </TableCell>
+                                    <TableCell
+                                        className={className}
+                                        align="right"
+                                    >
+                                        {description.scale}
+                                    </TableCell>
+                                    <TableCell className={className}>
+                                        {description.nullable ? (
+                                            <CheckOutlined
+                                                className={classes.check}
+                                            />
+                                        ) : (
+                                            <CloseOutlined color="error" />
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </DialogContent>

@@ -10,9 +10,8 @@ from src import root_directory
 from src.access_database_already_exist import AccessDatabaseAlreadyExist
 from src.access_database_does_not_exist import AccessDatabaseDoesNotExist
 from src.create_table import ColumnType, CreateDatabaseTableSchema
-from src.describe_table import ColumnDescription, TableDescription
 from src.insert_row import TableRow
-from src.read_table import TableSchema
+from src.read_table import ColumnDescription, TableSchema
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -179,7 +178,7 @@ class TestReadDatabaseTable:
 
         assert response.status_code == HTTP_404_NOT_FOUND
 
-    def test_whenReadingDatabaseTable_thenRowsAndColumnsAreReturned(
+    def test_whenReadingDatabaseTable_thenColumnsDescriptionAreReturned(
         self,
         test_client: TestClient,
         mocked_connect_to_database: Mock,
@@ -187,43 +186,12 @@ class TestReadDatabaseTable:
     ):
         mocked_connect_to_database.return_value = create_autospec(Connection)
         mocked_read_table.return_value = TableSchema(
-            rows=SOME_ROWS, columns=SOME_COLUMNS
+            rows=SOME_ROWS,
+            columns_description=SOME_COLUMNS_DESCRIPTION,
         )
 
         response = test_client.get(
             f"/databases/{A_DATABASE_NAME}/tables/{A_TABLE_NAME}"
-        )
-
-        assert response.status_code == HTTP_200_OK
-        assert response.json()["rows"] == SOME_ROWS
-        assert response.json()["columns"] == SOME_COLUMNS
-
-
-class TestDescribeDatabaseTable:
-    def test_givenDatabaseDoesNotExist_whenDescribingTable_thenNotFound(
-        self, test_client: TestClient, mocked_connect_to_database: Mock
-    ):
-        mocked_connect_to_database.side_effect = AccessDatabaseDoesNotExist
-
-        response = test_client.get(
-            f"/databases/{A_DATABASE_NAME}/tables/{A_TABLE_NAME}/description"
-        )
-
-        assert response.status_code == HTTP_404_NOT_FOUND
-
-    def test_whenDescribiningDatabaseTable_thenColumnsDescriptionAreReturned(
-        self,
-        test_client: TestClient,
-        mocked_connect_to_database: Mock,
-        mocked_describe_table: Mock,
-    ):
-        mocked_connect_to_database.return_value = create_autospec(Connection)
-        mocked_describe_table.return_value = TableDescription(
-            columns_description=SOME_COLUMNS_DESCRIPTION
-        )
-
-        response = test_client.get(
-            f"/databases/{A_DATABASE_NAME}/tables/{A_TABLE_NAME}/description"
         )
 
         assert response.status_code == HTTP_200_OK
@@ -290,11 +258,6 @@ def mocked_list_tables(mocker):
 @pytest.fixture
 def mocked_read_table(mocker):
     return mocker.patch("src.routes.read_table")
-
-
-@pytest.fixture
-def mocked_describe_table(mocker):
-    return mocker.patch("src.routes.describe_table")
 
 
 @pytest.fixture

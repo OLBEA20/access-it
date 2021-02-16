@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-    describeDatabaseTable,
-    insertRowInDatabaseTable,
-    readDatabaseTable,
-} from "../api/api";
-import { DatabaseTable, TableDescription } from "../api/models";
+import { insertRowInDatabaseTable, readDatabaseTable } from "../api/api";
+import { ColumnDescription, DatabaseTable } from "../api/models";
 import { useParams } from "react-router-dom";
 import {
     CellClassParams,
@@ -15,13 +11,9 @@ import {
 } from "@material-ui/data-grid";
 import {
     Button,
-    Dialog,
-    DialogContent,
-    DialogTitle,
     IconButton,
     makeStyles,
     Paper,
-    TableBodyClassKey,
     Theme,
     Typography,
 } from "@material-ui/core";
@@ -72,9 +64,6 @@ export function DatabaseTableContainer() {
     const { databaseName, tableName } = useParams();
     const classes = useStyle();
     const [table, setTable] = useState<DatabaseTable | undefined>();
-    const [tableDescription, setTableDescription] = useState<
-        TableDescription | undefined
-    >();
     const [tableDescriptionOpen, setTableDescriptionOpen] = useState<boolean>(
         false
     );
@@ -83,20 +72,15 @@ export function DatabaseTableContainer() {
 
     useEffect(() => {
         readDatabaseTable(databaseName, tableName).then(setTable);
-        describeDatabaseTable(databaseName, tableName).then(
-            setTableDescription
-        );
     }, [databaseName, tableName]);
 
     return (
         <div className={classes.root}>
-            {tableDescription && (
-                <TableDescriptionDialog
-                    open={tableDescriptionOpen}
-                    onClose={() => setTableDescriptionOpen(false)}
-                    tableDescription={tableDescription}
-                />
-            )}
+            <TableDescriptionDialog
+                open={tableDescriptionOpen}
+                onClose={() => setTableDescriptionOpen(false)}
+                columnsDescription={table?.columns_description ?? []}
+            />
             <Paper className={classes.tableContainer} elevation={0}>
                 <div className={classes.tableContainerHeader}>
                     <Typography variant="h5" color="textSecondary" gutterBottom>
@@ -116,11 +100,11 @@ export function DatabaseTableContainer() {
                         showToolbar
                         autoPageSize
                         rows={buildRows(
-                            table?.columns ?? [],
+                            table?.columns_description ?? [],
                             table?.rows ?? []
                         )}
                         columns={buildColumnsDefinition(
-                            table?.columns ?? [],
+                            table?.columns_description ?? [],
                             width ?? 0,
                             classes.header,
                             () => classes.row
@@ -141,7 +125,7 @@ export function DatabaseTableContainer() {
                 )}
                 {newRowOpened && (
                     <NewRowForm
-                        columns={table?.columns ?? []}
+                        columns={table?.columns_description ?? []}
                         onCancel={() => setNewRowOpened(false)}
                         onSubmit={(values) => {
                             insertRowInDatabaseTable(
@@ -162,24 +146,24 @@ export function DatabaseTableContainer() {
 }
 
 function buildColumnsDefinition(
-    columns: string[],
+    columns: ColumnDescription[],
     windowWith: number,
     headerClassName: string,
     getCellClassName: (params: CellClassParams) => string
 ): ColDef[] {
     const isWideEnoughtToUseFlex = windowWith / columns.length > 150;
     return columns.map((column) => ({
-        field: column,
+        field: column.name,
         flex: isWideEnoughtToUseFlex ? 1 : undefined,
         width: !isWideEnoughtToUseFlex ? 150 : undefined,
-        headerName: column,
+        headerName: column.name,
         headerClassName,
         cellClassName: getCellClassName,
     }));
 }
 
 function buildRows(
-    columns: string[],
+    columns: ColumnDescription[],
     rows: (string | number | boolean | null)[][]
 ): RowsProp {
     return rows.map(
@@ -188,7 +172,7 @@ function buildRows(
                 (def, value, index) => ({
                     ...def,
                     id,
-                    [columns[index]]: value,
+                    [columns[index].name]: value,
                 }),
                 {}
             ) as RowModel

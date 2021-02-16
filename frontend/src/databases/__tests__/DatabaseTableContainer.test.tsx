@@ -1,10 +1,6 @@
 import React from "react";
 import { act, render, screen, waitFor } from "@testing-library/react";
-import {
-    describeDatabaseTable,
-    insertRowInDatabaseTable,
-    readDatabaseTable,
-} from "../../api/api";
+import { insertRowInDatabaseTable, readDatabaseTable } from "../../api/api";
 import { DatabaseTableContainer } from "../DatabaseTableContainer";
 import { useParams } from "react-router-dom";
 import { clickButton, typeText } from "../../commons/fireEventUtils";
@@ -16,14 +12,6 @@ jest.mock("../../utils/useWindowSize");
 
 const A_TABLE = {
     name: "table_name",
-    columns: ["column_a", "column_b"],
-    rows: [
-        ["a", "b"],
-        ["c", "d"],
-    ],
-};
-
-const A_TABLE_DESCRIPTION = {
     columns_description: [
         {
             name: "column_a",
@@ -44,6 +32,10 @@ const A_TABLE_DESCRIPTION = {
             nullable: true,
         },
     ],
+    rows: [
+        ["a", "b"],
+        ["c", "d"],
+    ],
 };
 
 const A_VALUE = "a_value";
@@ -55,9 +47,6 @@ describe("<DatabaseTableContainer />", () => {
             tableName: "table",
         });
         (readDatabaseTable as jest.Mock).mockResolvedValue(A_TABLE);
-        (describeDatabaseTable as jest.Mock).mockResolvedValue(
-            A_TABLE_DESCRIPTION
-        );
         (useWindowSize as jest.Mock).mockReturnValue({
             width: 150,
             height: 150,
@@ -69,7 +58,7 @@ describe("<DatabaseTableContainer />", () => {
 
     it("should display columns name", async () => {
         await waitFor(() =>
-            A_TABLE.columns.map((name) =>
+            A_TABLE.columns_description.map(({ name }) =>
                 expect(screen.getByText(name)).toBeInTheDocument()
             )
         );
@@ -134,10 +123,14 @@ describe("<DatabaseTableContainer />", () => {
             clickButton({ name: /add row/i });
 
             typeText(A_VALUE).in(
-                screen.getByRole("textbox", { name: A_TABLE.columns[0] })
+                screen.getByRole("textbox", {
+                    name: A_TABLE.columns_description[0].name,
+                })
             );
             typeText(ANOTHER_VALUE).in(
-                screen.getByRole("textbox", { name: A_TABLE.columns[1] })
+                screen.getByRole("textbox", {
+                    name: A_TABLE.columns_description[1].name,
+                })
             );
             clickButton({ name: /add/i });
 
@@ -146,8 +139,8 @@ describe("<DatabaseTableContainer />", () => {
                     "database",
                     "table",
                     [
-                        [A_TABLE.columns[0], A_VALUE],
-                        [A_TABLE.columns[1], ANOTHER_VALUE],
+                        [A_TABLE.columns_description[0].name, A_VALUE],
+                        [A_TABLE.columns_description[1].name, ANOTHER_VALUE],
                     ]
                 )
             );
@@ -180,7 +173,7 @@ describe("<DatabaseTableContainer />", () => {
         it("should display table description", () => {
             clickButton({ name: /description/i });
 
-            A_TABLE_DESCRIPTION.columns_description.forEach((description) =>
+            A_TABLE.columns_description.forEach((description) =>
                 expect(
                     screen.getByRole("row", { name: description.name })
                 ).toBeInTheDocument()

@@ -13,7 +13,6 @@ from src.access_database_already_exist import AccessDatabaseAlreadyExist
 from src.access_database_does_not_exist import AccessDatabaseDoesNotExist
 from src.create_table import CreateDatabaseTableSchema, create_table
 from src.database_connection import connect_to_database, create_access_database
-from src.describe_table import describe_table
 from src.insert_row import TableRow, insert_row
 from src.list_tables import DatabaseTablesSchema, list_tables
 from src.read_table import TableSchema, read_table
@@ -111,22 +110,6 @@ def read_database_table(name: str, table_name: str) -> TableSchema:
             os.path.join(databases_directory, f"{name}.mdb")
         )
         return read_table(table_name, connection)
-    except AccessDatabaseDoesNotExist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Access database does not exist",
-        )
-
-
-@databases.get(
-    "/databases/{name}/tables/{table_name}/description", status_code=status.HTTP_200_OK
-)
-def describe_database_table(name: str, table_name: str) -> TableSchema:
-    try:
-        connection = connect_to_database(
-            os.path.join(databases_directory, f"{name}.mdb")
-        )
-        return describe_table(table_name, connection)
     except AccessDatabaseDoesNotExist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

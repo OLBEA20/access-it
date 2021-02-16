@@ -16,7 +16,7 @@ export interface DatabaseTableCreate {
 }
 
 export interface DatabaseTable {
-    columns: string[];
+    columns_description: ColumnDescription[];
     rows: (string | number | boolean | null)[][];
 }
 
@@ -41,10 +41,6 @@ export enum ColumnType {
     DATETIME = "DATETIME",
     DATE = "DATE",
     TIME = "TIME",
-}
-
-export interface TableDescription {
-    columns_description: ColumnDescription[];
 }
 
 export interface ColumnDescription {
