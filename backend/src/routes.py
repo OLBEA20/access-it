@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi import HTTPException
 from fastapi.params import File
 from fastapi.routing import APIRouter
+from jaydebeapi import Cursor
 from pydantic.main import BaseModel
 from starlette import status
 from starlette.responses import Response
@@ -32,6 +33,10 @@ class CreateDatabaseResponse(BaseModel):
 
 class ListDatabasesResponse(BaseModel):
     names: List[str]
+
+
+class UpdateDatabase(BaseModel):
+    statement: str
 
 
 @databases.get("/databases", status_code=status.HTTP_200_OK)
@@ -72,6 +77,21 @@ def delete_database(name) -> ListDatabasesResponse:
             if os.path.isfile(os.path.join(databases_directory, file))
         ]
     )
+
+
+@databases.post("/databases/{name}/update", status_code=status.HTTP_200_OK)
+def update_database(name, update_query: UpdateDatabase) -> None:
+    try:
+        connection = connect_to_database(
+            os.path.join(databases_directory, f"{name}.mdb")
+        )
+        cursor: Cursor = connection.cursor()
+        cursor.execute(update_query.statement)
+    except AccessDatabaseDoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Access database does not exist",
+        )
 
 
 @databases.post("/databases/{name}/tables", status_code=status.HTTP_204_NO_CONTENT)

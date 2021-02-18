@@ -1,7 +1,7 @@
 import os
 from tempfile import TemporaryDirectory
 
-from jaydebeapi import Connection
+from jaydebeapi import Connection, Cursor
 from src.create_table import (
     ColumnType,
     CreateDatabaseTableSchema,
@@ -23,7 +23,7 @@ class TestReadTable:
         with TemporaryDirectory() as directory:
             connection = create_access_database(os.path.join(directory, "test.mdb"))
             _create_table(A_TABLE_NAME, connection)
-            cursor = connection.cursor()
+            cursor: Cursor = connection.cursor()
             cursor.execute(
                 f"INSERT INTO {A_TABLE_NAME} ({A_COLUMN_NAME}, {ANOTHER_COLUMN_NAME})"
                 f" VALUES ('{A_VALUE}', '{ANOTHER_VALUE}')"

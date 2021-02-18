@@ -1,4 +1,5 @@
 import {
+    Button,
     Divider,
     IconButton,
     List,
@@ -9,7 +10,11 @@ import {
     Theme,
     Typography,
 } from "@material-ui/core";
-import { AddOutlined, TocOutlined } from "@material-ui/icons";
+import {
+    AddOutlined,
+    ChevronRightRounded,
+    TocOutlined,
+} from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listDatabaseTables } from "../api/api";
@@ -19,10 +24,16 @@ const useStyle = makeStyles((theme: Theme) => ({
     root: {
         display: "flex",
         flexDirection: "column",
+        maxHeight: `calc(100% - 2 * ${theme.spacing(2)}px)`,
+        gap: theme.spacing(2, 2),
+    },
+    tablesContainer: {
+        display: "flex",
+        flexDirection: "column",
         padding: theme.spacing(2),
         minWidth: 300,
-        maxHeight: `calc(100% - 2 * ${theme.spacing(2)}px)`,
         alignItems: "flex-start",
+        overflow: "auto",
     },
     title: {
         display: "flex",
@@ -36,6 +47,16 @@ const useStyle = makeStyles((theme: Theme) => ({
         width: "100%",
         display: "flex",
         justifyContent: "center",
+        alignItems: "center",
+    },
+    godModeContainer: {
+        padding: theme.spacing(2),
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    godModeButton: {
+        display: "flex",
         alignItems: "center",
     },
 }));
@@ -53,36 +74,62 @@ export function DatabaseContainer() {
     }, [databaseName]);
 
     return (
-        <Paper className={classes.root} variant="outlined" elevation={0}>
-            <div className={classes.title}>
-                <TocOutlined fontSize="large" />
-                &nbsp;&nbsp;
-                <Typography variant="h4">Tables</Typography>
-            </div>
-            <Divider style={{ width: "100%" }} />
-            <List dense className={classes.tables}>
-                {tables.map((name) => (
-                    <ListItem
-                        key={name}
-                        button
-                        disableGutters
-                        onClick={() =>
-                            navigate(ROUTES.databaseTable(databaseName, name))
-                        }
+        <div className={classes.root}>
+            <Paper
+                className={classes.tablesContainer}
+                variant="outlined"
+                elevation={0}
+            >
+                <div className={classes.title}>
+                    <TocOutlined fontSize="large" />
+                    &nbsp;&nbsp;
+                    <Typography variant="h4">Tables</Typography>
+                </div>
+                <Divider style={{ width: "100%" }} />
+                <List dense className={classes.tables}>
+                    {tables.map((name) => (
+                        <ListItem
+                            key={name}
+                            button
+                            disableGutters
+                            onClick={() =>
+                                navigate(
+                                    ROUTES.databaseTable(databaseName, name)
+                                )
+                            }
+                        >
+                            <ListItemText>{name}</ListItemText>
+                        </ListItem>
+                    ))}
+                </List>
+                <div className={classes.actions}>
+                    <IconButton
+                        color="primary"
+                        aria-label="add-table"
+                        onClick={() => navigate(ROUTES.newDatabaseTable())}
                     >
-                        <ListItemText>{name}</ListItemText>
-                    </ListItem>
-                ))}
-            </List>
-            <div className={classes.actions}>
-                <IconButton
+                        <AddOutlined />
+                    </IconButton>
+                </div>
+            </Paper>
+            <Paper
+                variant="outlined"
+                elevation={0}
+                className={classes.godModeContainer}
+            >
+                <Button
+                    className={classes.godModeButton}
+                    variant="contained"
                     color="primary"
-                    aria-label="add-table"
-                    onClick={() => navigate(ROUTES.newDatabaseTable())}
+                    disableElevation
+                    onClick={() =>
+                        navigate(ROUTES.databaseGodMode(databaseName))
+                    }
                 >
-                    <AddOutlined />
-                </IconButton>
-            </div>
-        </Paper>
+                    God mode
+                    <ChevronRightRounded />
+                </Button>
+            </Paper>
+        </div>
     );
 }

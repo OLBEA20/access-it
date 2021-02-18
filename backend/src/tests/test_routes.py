@@ -1,10 +1,11 @@
 import os
+from src.routes import UpdateDatabase
 from tempfile import TemporaryFile
 from unittest.mock import ANY, Mock, create_autospec
 
 import pytest
 from fastapi.testclient import TestClient
-from jaydebeapi import Connection
+from jaydebeapi import Connection, Cursor
 from main import application
 from src import root_directory
 from src.access_database_already_exist import AccessDatabaseAlreadyExist
@@ -109,6 +110,38 @@ class TestDeleteDatabase:
 
         assert response.status_code == HTTP_200_OK
         mocked_remove_database_file.assert_called_once_with(A_DATABASE_NAME)
+
+
+class TestUpdateDatabase:
+    def test_thenUpdateStatementIsExecuted(
+        self, test_client: TestClient, mocked_connect_to_database: Mock
+    ):
+        mocked_connection = create_autospec(Connection)
+        mocked_cursor = create_autospec(Cursor)
+        mocked_connection.cursor.return_value = mocked_cursor
+        mocked_connect_to_database.return_value = mocked_connection
+        a_statement = "UPDATE table set column='value' where 1=1;"
+
+        response = test_client.post(
+            f"/databases/{A_DATABASE_NAME}/update",
+            json=UpdateDatabase(statement=a_statement).dict(),
+        )
+
+        assert response.status_code == HTTP_200_OK
+        mocked_cursor.execute.assert_called_once_with(a_statement)
+
+    def test_givenDatabaseDoesNotExist_thenNotFound(
+        self, test_client: TestClient, mocked_connect_to_database: Mock
+    ):
+        mocked_connect_to_database.side_effect = AccessDatabaseDoesNotExist
+        a_statement = "UPDATE table set column='value' where 1=1;"
+
+        response = test_client.post(
+            f"/databases/{A_DATABASE_NAME}/update",
+            json=UpdateDatabase(statement=a_statement).dict(),
+        )
+
+        assert response.status_code == HTTP_404_NOT_FOUND
 
 
 class TestCreateTable:

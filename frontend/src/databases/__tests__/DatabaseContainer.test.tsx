@@ -60,4 +60,16 @@ describe("<DatabaseContainer />", () => {
             );
         });
     });
+
+    describe("on god mod button click", () => {
+        it("should redirect to sql query page", async () => {
+            clickButton({ name: /god mode/i });
+
+            await waitFor(() =>
+                expect(useNavigate()).toHaveBeenCalledWith(
+                    ROUTES.databaseGodMode(A_DATABASE_NAME)
+                )
+            );
+        });
+    });
 });

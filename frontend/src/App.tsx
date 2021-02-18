@@ -5,6 +5,7 @@ import { DatabasesContainer } from "./databases/DatabasesContainer";
 import { DatabaseTableContainer } from "./databases/DatabaseTableContainer";
 import { NewTableForm } from "./databases/NewTableForm";
 import { AppContainer } from "./AppContainer";
+import { DatabaseQueryPage } from "./databases/query/DatabaseQueryPage";
 
 export function App() {
     return (
@@ -19,6 +20,10 @@ export function App() {
                         />
                     </Route>
 
+                    <Route
+                        path="/databases/:databaseName/query"
+                        element={<DatabaseQueryPage />}
+                    />
                     <Route
                         path="/databases/:databaseName/tables/:tableName"
                         element={<DatabaseTableContainer />}

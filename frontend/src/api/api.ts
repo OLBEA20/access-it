@@ -36,6 +36,18 @@ export function deleteDatabase(name: string): Promise<ListDabatasesResponse> {
     );
 }
 
+export async function updateDatabase(
+    name: string,
+    statement: string
+): Promise<void> {
+    return fetch(buildApiUrl(`databases/${name}/update`), {
+        method: "Post",
+        body: JSON.stringify({ statement }),
+    }).then((response) =>
+        succeeded(response) ? response.json() : Promise.reject()
+    );
+}
+
 export function listDatabaseTables(
     databasenName: string
 ): Promise<ListDatabaseTablesResponse> {
