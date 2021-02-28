@@ -1,5 +1,6 @@
 import {
     Button,
+    CircularProgress,
     Divider,
     IconButton,
     List,
@@ -43,6 +44,13 @@ const useStyle = makeStyles((theme: Theme) => ({
         overflowY: "auto",
         width: "100%",
     },
+    progressContainer: {
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
+        padding: theme.spacing(2),
+        boxSizing: "border-box",
+    },
     actions: {
         width: "100%",
         display: "flex",
@@ -66,11 +74,13 @@ export function DatabaseContainer() {
     const navigate = useNavigate();
     const classes = useStyle();
     const [tables, setTables] = useState<string[]>([]);
+    const [tablesAreLoading, setTablesAreLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        listDatabaseTables(databaseName).then(({ tables }) =>
-            setTables(tables)
-        );
+        setTablesAreLoading(true);
+        listDatabaseTables(databaseName)
+            .then(({ tables }) => setTables(tables))
+            .finally(() => setTablesAreLoading(false));
     }, [databaseName]);
 
     return (
@@ -86,22 +96,29 @@ export function DatabaseContainer() {
                     <Typography variant="h4">Tables</Typography>
                 </div>
                 <Divider style={{ width: "100%" }} />
-                <List dense className={classes.tables}>
-                    {tables.map((name) => (
-                        <ListItem
-                            key={name}
-                            button
-                            disableGutters
-                            onClick={() =>
-                                navigate(
-                                    ROUTES.databaseTable(databaseName, name)
-                                )
-                            }
-                        >
-                            <ListItemText>{name}</ListItemText>
-                        </ListItem>
-                    ))}
-                </List>
+                {tablesAreLoading ? (
+                    <div className={classes.progressContainer}>
+                        <CircularProgress />
+                    </div>
+                ) : (
+                    <List dense className={classes.tables}>
+                        {tables.map((name) => (
+                            <ListItem
+                                key={name}
+                                button
+                                disableGutters
+                                onClick={() =>
+                                    navigate(
+                                        ROUTES.databaseTable(databaseName, name)
+                                    )
+                                }
+                            >
+                                <ListItemText>{name}</ListItemText>
+                            </ListItem>
+                        ))}
+                    </List>
+                )}
+
                 <div className={classes.actions}>
                     <IconButton
                         color="primary"
