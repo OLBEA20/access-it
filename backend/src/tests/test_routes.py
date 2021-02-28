@@ -1,5 +1,4 @@
 import os
-from src.routes import UpdateDatabase
 from tempfile import TemporaryFile
 from unittest.mock import ANY, Mock, create_autospec
 
@@ -13,6 +12,7 @@ from src.access_database_does_not_exist import AccessDatabaseDoesNotExist
 from src.create_table import ColumnType, CreateDatabaseTableSchema
 from src.insert_row import TableRow
 from src.read_table import ColumnDescription, TableSchema
+from src.routes import UpdateDatabase
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -52,6 +52,28 @@ SOME_COLUMNS_DESCRIPTION = [
         nullable=False,
     ),
 ]
+
+
+class TestDownloadDatabaseFile:
+    def test_thenDatabaseFileIsReturned(
+        self, test_client: TestClient, mocked_read_database_file: Mock
+    ):
+        a_database_file_content = b"YOLO"
+        mocked_read_database_file.return_value = a_database_file_content
+
+        response = test_client.get(f"/databases/{A_DATABASE_NAME}")
+
+        assert response.status_code == HTTP_200_OK
+        assert response.content == a_database_file_content
+
+    def test_givenDatabaseFileDoesNotExist_thenNotFound(
+        self, test_client: TestClient, mocked_read_database_file: Mock
+    ):
+        mocked_read_database_file.side_effect = FileNotFoundError
+
+        response = test_client.get(f"/databases/{A_DATABASE_NAME}")
+
+        assert response.status_code == HTTP_404_NOT_FOUND
 
 
 class TestCreate:
@@ -306,3 +328,8 @@ def mocked_write_database_file(mocker) -> Mock:
 @pytest.fixture
 def mocked_remove_database_file(mocker) -> Mock:
     return mocker.patch("src.routes.remove_database_file")
+
+
+@pytest.fixture
+def mocked_read_database_file(mocker) -> Mock:
+    return mocker.patch("src.routes.read_database_file")

@@ -1,3 +1,4 @@
+import io
 import os
 from typing import List, Optional
 
@@ -7,7 +8,7 @@ from fastapi.routing import APIRouter
 from jaydebeapi import Cursor
 from pydantic.main import BaseModel
 from starlette import status
-from starlette.responses import Response
+from starlette.responses import Response, StreamingResponse
 
 from src import root_directory
 from src.access_database_already_exist import AccessDatabaseAlreadyExist
@@ -48,6 +49,20 @@ def list_databases() -> ListDatabasesResponse:
             if os.path.isfile(os.path.join(databases_directory, file))
         ]
     )
+
+
+@databases.get("/databases/{name}", status_code=status.HTTP_200_OK)
+def download_database(name) -> StreamingResponse:
+    try:
+        return StreamingResponse(
+            content=io.BytesIO(read_database_file(name)),
+            media_type="application/vnd.ms-access",
+            headers={
+                "Content-Disposition": f"attachment; filename={name}",
+            },
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
 @databases.put("/databases/{name}", status_code=status.HTTP_201_CREATED)
@@ -161,3 +176,8 @@ def write_database_file(filename: str, database_file: bytes) -> None:
 
 def remove_database_file(filename: str) -> None:
     os.remove(os.path.join(databases_directory, f"{filename}.mdb"))
+
+
+def read_database_file(filename: str) -> bytes:
+    with open(os.path.join(databases_directory, f"{filename}.mdb"), "rb") as file:
+        return file.read()

@@ -6,3 +6,4 @@ export const createDatabaseTable = jest.fn();
 export const readDatabaseTable = jest.fn();
 export const insertRowInDatabaseTable = jest.fn();
 export const updateDatabase = jest.fn();
+export const downloadDatabase = jest.fn();

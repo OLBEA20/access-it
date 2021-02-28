@@ -9,7 +9,12 @@ import {
 import { StorageOutlined } from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
 import { Outlet, useMatch } from "react-router-dom";
-import { createDatabase, deleteDatabase, listDatabases } from "../api/api";
+import {
+    createDatabase,
+    deleteDatabase,
+    downloadDatabase,
+    listDatabases,
+} from "../api/api";
 import { DatabaseRow } from "./DatabaseRow";
 import { NewDatabaseForm } from "./NewDatabaseForm";
 
@@ -79,6 +84,7 @@ export function DatabasesContainer() {
                                         setDatabases(names)
                                     )
                                 }
+                                onDownload={() => downloadDatabase(name)}
                             />
                         ))}
                     </List>

@@ -1,12 +1,11 @@
 import React from "react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import {
-    act,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-} from "@testing-library/react";
-import { createDatabase, deleteDatabase, listDatabases } from "../../api/api";
+    createDatabase,
+    deleteDatabase,
+    downloadDatabase,
+    listDatabases,
+} from "../../api/api";
 import { DatabasesContainer } from "../DatabasesContainer";
 import { clickButton, typeText } from "../../commons/fireEventUtils";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +36,43 @@ describe("<DatabasesContainer />", () => {
             await waitFor(() =>
                 SOME_DATABASES_NAME.forEach((name) =>
                     expect(screen.getByText(name)).toBeInTheDocument()
+                )
+            );
+        });
+    });
+
+    describe("on hover database name", () => {
+        it("should display download icon", async () => {
+            render(<DatabasesContainer />);
+
+            userEvent.hover((await screen.findAllByTestId("database-item"))[0]);
+
+            expect(
+                (
+                    await screen.findAllByRole("button", {
+                        name: /download database/i,
+                    })
+                )[0]
+            ).toBeVisible();
+        });
+    });
+
+    describe("on download button click", () => {
+        it("should download database", async () => {
+            render(<DatabasesContainer />);
+
+            userEvent.hover((await screen.findAllByTestId("database-item"))[0]);
+            userEvent.click(
+                (
+                    await screen.findAllByRole("button", {
+                        name: /download database/i,
+                    })
+                )[0]
+            );
+
+            await waitFor(() =>
+                expect(downloadDatabase).toHaveBeenCalledWith(
+                    SOME_DATABASES_NAME[0]
                 )
             );
         });

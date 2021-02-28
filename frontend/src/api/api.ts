@@ -11,6 +11,19 @@ export function listDatabases(): Promise<ListDabatasesResponse> {
     return fetch(buildApiUrl("databases")).then((response) => response.json());
 }
 
+export function downloadDatabase(name: string) {
+    fetch(buildApiUrl(`databases/${name}`), { method: "Get" })
+        .then((response) =>
+            succeeded(response) ? response.blob() : Promise.reject()
+        )
+        .then((content) => {
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(content);
+            link.download = `${name}.mdb`;
+            link.click();
+        });
+}
+
 export function createDatabase(
     name: string,
     databaseFile?: File
@@ -19,6 +32,7 @@ export function createDatabase(
     if (databaseFile != null) {
         data = new FormData();
         data.append("database_file", databaseFile);
+        console.log(databaseFile.type);
     }
     return fetch(buildApiUrl(`databases/${name}`), {
         method: "Put",
