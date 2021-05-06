@@ -25,7 +25,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     root: {
         display: "flex",
         flexDirection: "column",
-        maxHeight: `calc(100% - 2 * ${theme.spacing(2)}px)`,
+        maxHeight: "100%",
         gap: theme.spacing(2, 2),
     },
     tablesContainer: {
