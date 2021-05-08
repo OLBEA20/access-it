@@ -19,7 +19,7 @@ const useStyle = makeStyles((theme: Theme) => ({
         padding: theme.spacing(2),
     },
     dropzone: ({ fileAccepted }: { fileAccepted: boolean }) => ({
-        backgroundColor: theme.palette.grey[200],
+        backgroundColor: theme.palette.grey.A400,
         padding: theme.spacing(2),
         borderRadius: theme.shape.borderRadius,
         borderStyle: "dotted",

@@ -80,7 +80,7 @@ export function DatabaseQueryPage() {
             <div className={classes.statementInputContainer}>
                 <SyntaxHighlighter
                     className={classes.statementCode}
-                    language="javascript"
+                    language="sql"
                     style={materialDark}
                 >
                     {statement}

@@ -38,7 +38,8 @@ const useStyle = makeStyles((theme: Theme) => ({
         justifyContent: "space-between",
     },
     header: {
-        backgroundColor: theme.palette.primary.light,
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.getContrastText(theme.palette.primary.main),
     },
     row: {
         fontWeight: theme.typography.fontWeightBold,
