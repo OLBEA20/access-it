@@ -11,7 +11,11 @@ import {
     Typography,
 } from "@material-ui/core";
 import { useParams } from "react-router-dom";
-import { updateDatabase } from "../../api/api";
+import {
+    insertDatabaseRows,
+    deleteDatabaseRows,
+    updateDatabase,
+} from "../../api/api";
 
 enum StatementResultStatus {
     SUCCESS = "success",
@@ -57,7 +61,7 @@ const useStyle = makeStyles<Theme, { status: StatementResultStatus }>(
                 status === StatementResultStatus.SUCCESS
                     ? theme.palette.success.main
                     : theme.palette.error.main,
-            fontWeight: theme.typography.fontWeightBold,
+            fontWeight: 900,
         }),
         actions: {
             display: "flex",
@@ -106,9 +110,10 @@ export function DatabaseQueryPage() {
                     color="primary"
                     onClick={() => {
                         setResult(undefined);
-                        submitStatement(databaseName, statement).then(
-                            setResult
-                        );
+                        databaseName != null &&
+                            submitStatement(databaseName, statement).then(
+                                setResult
+                            );
                     }}
                 >
                     Execute
@@ -118,23 +123,42 @@ export function DatabaseQueryPage() {
     );
 }
 
-function submitStatement(
+async function submitStatement(
     databaseName: string,
     statement: string
 ): Promise<StatementResult> {
-    if (statement.toLocaleLowerCase().startsWith("update")) {
-        return updateDatabase(databaseName, statement)
-            .then(() => ({
-                status: StatementResultStatus.SUCCESS,
-                message: "UPDATE SUCCESSFUL!!!",
-            }))
-            .catch(() => ({
-                status: StatementResultStatus.FAILED,
-                message: "UPDATE FAILED!!!",
-            }));
+    if (statementIsAn("update", statement)) {
+        return apply(() => updateDatabase(databaseName, statement), "update");
+    } else if (statementIsA("delete", statement)) {
+        return apply(
+            () => deleteDatabaseRows(databaseName, statement),
+            "delete"
+        );
+    } else if (statementIsAn("insert", statement)) {
+        return apply(
+            () => insertDatabaseRows(databaseName, statement),
+            "insert"
+        );
     }
     return Promise.resolve({
-        status: StatementResultStatus.SUCCESS,
-        message: "",
+        status: StatementResultStatus.FAILED,
+        message: "Statement not supported",
     });
 }
+
+async function apply(func: () => Promise<void>, action: string) {
+    return func()
+        .then(() => ({
+            status: StatementResultStatus.SUCCESS,
+            message: `${action.toUpperCase()} SUCCESSFUL!!!`,
+        }))
+        .catch(() => ({
+            status: StatementResultStatus.FAILED,
+            message: `${action.toUpperCase()} FAILED!!!`,
+        }));
+}
+
+function statementIsAn(statementType: string, statement: string) {
+    return statement.toLocaleLowerCase().startsWith(statementType);
+}
+const statementIsA = statementIsAn;

@@ -1,14 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { insertRowInDatabaseTable, readDatabaseTable } from "../api/api";
 import { ColumnDescription, DatabaseTable } from "../api/models";
 import { useParams } from "react-router-dom";
-import {
-    CellClassParams,
-    ColDef,
-    DataGrid,
-    RowModel,
-    RowsProp,
-} from "@material-ui/data-grid";
+import { DataGrid, GridColumns, GridRowData } from "@material-ui/data-grid";
 import {
     Button,
     IconButton,
@@ -41,9 +35,6 @@ const useStyle = makeStyles((theme: Theme) => ({
         backgroundColor: theme.palette.primary.main,
         color: theme.palette.getContrastText(theme.palette.primary.main),
     },
-    row: {
-        fontWeight: theme.typography.fontWeightBold,
-    },
     pairRow: {
         backgroundColor: theme.palette.grey[100],
     },
@@ -65,14 +56,15 @@ export function DatabaseTableContainer() {
     const { databaseName, tableName } = useParams();
     const classes = useStyle();
     const [table, setTable] = useState<DatabaseTable | undefined>();
-    const [tableDescriptionOpen, setTableDescriptionOpen] = useState<boolean>(
-        false
-    );
+    const [tableDescriptionOpen, setTableDescriptionOpen] =
+        useState<boolean>(false);
     const [newRowOpened, setNewRowOpened] = useState<boolean>(false);
     const { width } = useWindowSize();
 
     useEffect(() => {
-        readDatabaseTable(databaseName, tableName).then(setTable);
+        databaseName != null &&
+            tableName != null &&
+            readDatabaseTable(databaseName, tableName).then(setTable);
     }, [databaseName, tableName]);
 
     return (
@@ -98,7 +90,6 @@ export function DatabaseTableContainer() {
                 <div className={classes.table}>
                     <DataGrid
                         disableColumnSelector={false}
-                        showToolbar
                         autoPageSize
                         rows={buildRows(
                             table?.columns_description ?? [],
@@ -107,8 +98,7 @@ export function DatabaseTableContainer() {
                         columns={buildColumnsDefinition(
                             table?.columns_description ?? [],
                             width ?? 0,
-                            classes.header,
-                            () => classes.row
+                            classes.header
                         )}
                     />
                 </div>
@@ -129,14 +119,15 @@ export function DatabaseTableContainer() {
                         columns={table?.columns_description ?? []}
                         onCancel={() => setNewRowOpened(false)}
                         onSubmit={(values) => {
-                            insertRowInDatabaseTable(
-                                databaseName,
-                                tableName,
-                                Object.entries(values).map(([key, value]) => [
-                                    key,
-                                    value,
-                                ])
-                            );
+                            databaseName != null &&
+                                tableName != null &&
+                                insertRowInDatabaseTable(
+                                    databaseName,
+                                    tableName,
+                                    Object.entries(values).map(
+                                        ([key, value]) => [key, value]
+                                    )
+                                );
                             setNewRowOpened(false);
                         }}
                     />
@@ -149,9 +140,8 @@ export function DatabaseTableContainer() {
 function buildColumnsDefinition(
     columns: ColumnDescription[],
     windowWith: number,
-    headerClassName: string,
-    getCellClassName: (params: CellClassParams) => string
-): ColDef[] {
+    headerClassName: string
+): GridColumns {
     const isWideEnoughtToUseFlex = windowWith / columns.length > 150;
     return columns.map((column) => ({
         field: column.name,
@@ -159,14 +149,18 @@ function buildColumnsDefinition(
         width: !isWideEnoughtToUseFlex ? 150 : undefined,
         headerName: column.name,
         headerClassName,
-        cellClassName: getCellClassName,
+        renderCell: (params: any) => (
+            <strong title={params.value?.toString() ?? ""}>
+                {params.value?.toString()}
+            </strong>
+        ),
     }));
 }
 
 function buildRows(
     columns: ColumnDescription[],
     rows: (string | number | boolean | null)[][]
-): RowsProp {
+): GridRowData[] {
     return rows.map(
         (row, id) =>
             row.reduce(
@@ -176,6 +170,6 @@ function buildRows(
                     [columns[index].name]: value,
                 }),
                 {}
-            ) as RowModel
+            ) as GridRowData
     );
 }

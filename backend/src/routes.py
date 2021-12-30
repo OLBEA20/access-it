@@ -36,7 +36,7 @@ class ListDatabasesResponse(BaseModel):
     names: List[str]
 
 
-class UpdateDatabase(BaseModel):
+class DatabaseStatement(BaseModel):
     statement: str
 
 
@@ -95,13 +95,25 @@ def delete_database(name) -> ListDatabasesResponse:
 
 
 @databases.post("/databases/{name}/update", status_code=status.HTTP_200_OK)
-def update_database(name, update_query: UpdateDatabase) -> None:
+def update_rows(name, update_query: DatabaseStatement) -> None:
+    _execute_statement(name, update_query)
+
+
+@databases.post("/databases/{name}/delete", status_code=status.HTTP_200_OK)
+def delete_rows(name, delete_query: DatabaseStatement) -> None:
+    _execute_statement(name, delete_query)
+
+@databases.post("/databases/{name}/insert", status_code=status.HTTP_200_OK)
+def insert_rows(name, delete_query: DatabaseStatement) -> None:
+    _execute_statement(name, delete_query)
+
+def _execute_statement(name: str, query: DatabaseStatement) -> None:
     try:
         connection = connect_to_database(
             os.path.join(databases_directory, f"{name}.mdb")
         )
         cursor: Cursor = connection.cursor()
-        cursor.execute(update_query.statement)
+        cursor.execute(query.statement)
     except AccessDatabaseDoesNotExist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

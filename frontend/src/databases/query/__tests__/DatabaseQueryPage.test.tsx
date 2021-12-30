@@ -1,8 +1,7 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import { DatabaseQueryPage } from "../DatabaseQueryPage";
 import { clickButton, typeText } from "../../../commons/fireEventUtils";
-import { updateDatabase } from "../../../api/api";
+import { deleteDatabaseRows, updateDatabase } from "../../../api/api";
 import { useParams } from "react-router-dom";
 
 jest.mock("../../../api/api");
@@ -19,15 +18,30 @@ describe("<DatabaseQueryPage />", () => {
 
     describe("on update query", () => {
         it("should update database", () => {
-            const updateStatement = "UPDATE table set column='new value';";
+            const statement = "UPDATE table set column='new value';";
             render(<DatabaseQueryPage />);
 
-            typeText(updateStatement).in(screen.getByRole("textbox"));
+            typeText(statement).in(screen.getByRole("textbox"));
+            clickButton({ name: /execute/i });
+
+            expect(deleteDatabaseRows).toHaveBeenCalledWith(
+                A_DATABASE_NAME,
+                statement
+            );
+        });
+    });
+
+    describe("on delete query", () => {
+        it("should delete database row", () => {
+            const statement = "DELETE FROM table WHERE 1=1;";
+            render(<DatabaseQueryPage />);
+
+            typeText(statement).in(screen.getByRole("textbox"));
             clickButton({ name: /execute/i });
 
             expect(updateDatabase).toHaveBeenCalledWith(
                 A_DATABASE_NAME,
-                updateStatement
+                statement
             );
         });
     });

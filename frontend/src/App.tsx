@@ -13,23 +13,23 @@ export function App() {
             <Routes>
                 <Route path="/" element={<Navigate to={"/databases"} />} />
                 <Route path="/*" element={<AppContainer />}>
-                    <Route path="/databases" element={<DatabasesContainer />}>
+                    <Route path="databases" element={<DatabasesContainer />}>
                         <Route
-                            path="/:databaseName"
+                            path=":databaseName"
                             element={<DatabaseContainer />}
                         />
                     </Route>
 
                     <Route
-                        path="/databases/:databaseName/query"
+                        path="databases/:databaseName/query"
                         element={<DatabaseQueryPage />}
                     />
                     <Route
-                        path="/databases/:databaseName/tables/:tableName"
+                        path="databases/:databaseName/tables/:tableName"
                         element={<DatabaseTableContainer />}
                     />
                     <Route
-                        path="/databases/:databaseName/new-table"
+                        path="databases/:databaseName/new-table"
                         element={<NewTableForm />}
                     />
                 </Route>

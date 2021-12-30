@@ -6,7 +6,7 @@ import {
     Theme,
     Typography,
 } from "@material-ui/core";
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 const useStyle = makeStyles((theme: Theme) => ({
@@ -30,7 +30,7 @@ const useStyle = makeStyles((theme: Theme) => ({
         justifyContent: "center",
     }),
     dropzoneContent: {
-        fontWeight: theme.typography.fontWeightBold,
+        fontWeight: 900,
     },
     actions: {
         display: "flex",

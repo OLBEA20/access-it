@@ -16,7 +16,7 @@ import {
     ChevronRightRounded,
     TocOutlined,
 } from "@material-ui/icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listDatabaseTables } from "../api/api";
 import { ROUTES } from "../routes";
@@ -78,9 +78,10 @@ export function DatabaseContainer() {
 
     useEffect(() => {
         setTablesAreLoading(true);
-        listDatabaseTables(databaseName)
-            .then(({ tables }) => setTables(tables))
-            .finally(() => setTablesAreLoading(false));
+        databaseName != null &&
+            listDatabaseTables(databaseName)
+                .then(({ tables }) => setTables(tables))
+                .finally(() => setTablesAreLoading(false));
     }, [databaseName]);
 
     return (
@@ -108,6 +109,7 @@ export function DatabaseContainer() {
                                 button
                                 disableGutters
                                 onClick={() =>
+                                    databaseName != null &&
                                     navigate(
                                         ROUTES.databaseTable(databaseName, name)
                                     )
@@ -140,6 +142,7 @@ export function DatabaseContainer() {
                     color="primary"
                     disableElevation
                     onClick={() =>
+                        databaseName != null &&
                         navigate(ROUTES.databaseGodMode(databaseName))
                     }
                 >

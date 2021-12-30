@@ -12,7 +12,7 @@ from src.access_database_does_not_exist import AccessDatabaseDoesNotExist
 from src.create_table import ColumnType, CreateDatabaseTableSchema
 from src.insert_row import TableRow
 from src.read_table import ColumnDescription, TableSchema
-from src.routes import UpdateDatabase
+from src.routes import DatabaseStatement
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -134,7 +134,7 @@ class TestDeleteDatabase:
         mocked_remove_database_file.assert_called_once_with(A_DATABASE_NAME)
 
 
-class TestUpdateDatabase:
+class TestUpdateRows:
     def test_thenUpdateStatementIsExecuted(
         self, test_client: TestClient, mocked_connect_to_database: Mock
     ):
@@ -146,7 +146,7 @@ class TestUpdateDatabase:
 
         response = test_client.post(
             f"/databases/{A_DATABASE_NAME}/update",
-            json=UpdateDatabase(statement=a_statement).dict(),
+            json=DatabaseStatement(statement=a_statement).dict(),
         )
 
         assert response.status_code == HTTP_200_OK
@@ -160,7 +160,39 @@ class TestUpdateDatabase:
 
         response = test_client.post(
             f"/databases/{A_DATABASE_NAME}/update",
-            json=UpdateDatabase(statement=a_statement).dict(),
+            json=DatabaseStatement(statement=a_statement).dict(),
+        )
+
+        assert response.status_code == HTTP_404_NOT_FOUND
+
+
+class TestDeleteRows:
+    def test_thenDeleteStatementIsExecuted(
+        self, test_client: TestClient, mocked_connect_to_database: Mock
+    ):
+        mocked_connection = create_autospec(Connection)
+        mocked_cursor = create_autospec(Cursor)
+        mocked_connection.cursor.return_value = mocked_cursor
+        mocked_connect_to_database.return_value = mocked_connection
+        a_statement = "DELETE FROM table where 1=1;"
+
+        response = test_client.post(
+            f"/databases/{A_DATABASE_NAME}/delete",
+            json=DatabaseStatement(statement=a_statement).dict(),
+        )
+
+        assert response.status_code == HTTP_200_OK
+        mocked_cursor.execute.assert_called_once_with(a_statement)
+
+    def test_givenDatabaseDoesNotExist_thenNotFound(
+        self, test_client: TestClient, mocked_connect_to_database: Mock
+    ):
+        mocked_connect_to_database.side_effect = AccessDatabaseDoesNotExist
+        a_statement = "DELETE FROM table where 1=1;"
+
+        response = test_client.post(
+            f"/databases/{A_DATABASE_NAME}/delete",
+            json=DatabaseStatement(statement=a_statement).dict(),
         )
 
         assert response.status_code == HTTP_404_NOT_FOUND

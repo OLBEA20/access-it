@@ -46,9 +46,12 @@ export function NewTableForm() {
                 className={classes.form}
                 onSubmit={(event) => {
                     event.preventDefault();
-                    createDatabaseTable(databaseName, table).then(() =>
-                        navigate(ROUTES.databaseTable(databaseName, table.name))
-                    );
+                    databaseName != null &&
+                        createDatabaseTable(databaseName, table).then(() =>
+                            navigate(
+                                ROUTES.databaseTable(databaseName, table.name)
+                            )
+                        );
                 }}
             >
                 <TextField

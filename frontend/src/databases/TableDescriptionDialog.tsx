@@ -20,7 +20,7 @@ const useStyle = makeStyles((theme: Theme) => ({
         backgroundColor: theme.palette.primary.light,
     },
     content: {
-        fontWeight: theme.typography.fontWeightBold,
+        fontWeight: 900,
     },
     odd: {
         backgroundColor: theme.palette.action.hover,

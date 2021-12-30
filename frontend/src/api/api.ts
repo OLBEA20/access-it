@@ -62,12 +62,33 @@ export async function updateDatabase(
     );
 }
 
+export async function insertDatabaseRows(name: string, statement: string) {
+    return fetch(buildApiUrl(`databases/${name}/insert`), {
+        method: "Post",
+        body: JSON.stringify({ statement }),
+    }).then((response) =>
+        succeeded(response) ? response.json() : Promise.reject()
+    );
+}
+
+export async function deleteDatabaseRows(
+    name: string,
+    statement: string
+): Promise<void> {
+    return fetch(buildApiUrl(`databases/${name}/delete`), {
+        method: "Post",
+        body: JSON.stringify({ statement }),
+    }).then((response) =>
+        succeeded(response) ? response.json() : Promise.reject()
+    );
+}
+
 export function listDatabaseTables(
     databasenName: string
 ): Promise<ListDatabaseTablesResponse> {
-    return fetch(
-        buildApiUrl(`databases/${databasenName}/tables`)
-    ).then((response) => response.json());
+    return fetch(buildApiUrl(`databases/${databasenName}/tables`)).then(
+        (response) => response.json()
+    );
 }
 
 export function createDatabaseTable(
