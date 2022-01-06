@@ -15,7 +15,7 @@ export interface DatabaseTableCreate {
     columns: TableColumn[];
 }
 
-export interface DatabaseTable {
+export interface SelectStatementResults {
     columns_description: ColumnDescription[];
     rows: (string | number | boolean | null)[][];
 }

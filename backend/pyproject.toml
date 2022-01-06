@@ -5,14 +5,14 @@ description = ""
 authors = ["Olivier"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 pydantic = "^1.7.3"
 fastapi = "^0.62.0"
 JayDeBeApi = "^1.2.3"
 pytest-mock = "^3.3.1"
 python-multipart = "^0.0.5"
 requests = "^2.25.0"
-uvicorn = "^0.13.2"
+uvicorn = "^0.16.0"
 loguru = "^0.5.3"
 
 [tool.poetry.dev-dependencies]

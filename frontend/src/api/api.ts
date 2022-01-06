@@ -1,7 +1,7 @@
 import { config } from "../config/config";
 import {
     Database,
-    DatabaseTable,
+    SelectStatementResults,
     DatabaseTableCreate,
     ListDabatasesResponse,
     ListDatabaseTablesResponse,
@@ -53,7 +53,7 @@ export function deleteDatabase(name: string): Promise<ListDabatasesResponse> {
 export async function updateDatabase(
     name: string,
     statement: string
-): Promise<void> {
+): Promise<undefined> {
     return fetch(buildApiUrl(`databases/${name}/update`), {
         method: "Post",
         body: JSON.stringify({ statement }),
@@ -62,8 +62,23 @@ export async function updateDatabase(
     );
 }
 
-export async function insertDatabaseRows(name: string, statement: string) {
+export async function insertDatabaseRows(
+    name: string,
+    statement: string
+): Promise<undefined> {
     return fetch(buildApiUrl(`databases/${name}/insert`), {
+        method: "Post",
+        body: JSON.stringify({ statement }),
+    }).then((response) =>
+        succeeded(response) ? response.json() : Promise.reject()
+    );
+}
+
+export async function selectDatabaseRows(
+    name: string,
+    statement: string
+): Promise<SelectStatementResults> {
+    return fetch(buildApiUrl(`databases/${name}/select`), {
         method: "Post",
         body: JSON.stringify({ statement }),
     }).then((response) =>
@@ -74,7 +89,7 @@ export async function insertDatabaseRows(name: string, statement: string) {
 export async function deleteDatabaseRows(
     name: string,
     statement: string
-): Promise<void> {
+): Promise<undefined> {
     return fetch(buildApiUrl(`databases/${name}/delete`), {
         method: "Post",
         body: JSON.stringify({ statement }),
@@ -104,7 +119,7 @@ export function createDatabaseTable(
 export function readDatabaseTable(
     databaseName: string,
     tableName: string
-): Promise<DatabaseTable> {
+): Promise<SelectStatementResults> {
     return fetch(
         buildApiUrl(`databases/${databaseName}/tables/${tableName}`)
     ).then((response) => response.json());

@@ -17,7 +17,7 @@ from src.create_table import CreateDatabaseTableSchema, create_table
 from src.database_connection import connect_to_database, create_access_database
 from src.insert_row import TableRow, insert_row
 from src.list_tables import DatabaseTablesSchema, list_tables
-from src.read_table import TableSchema, read_table
+from src.read_table import ColumnDescription, TableSchema, read_table
 
 databases = APIRouter()
 
@@ -103,17 +103,42 @@ def update_rows(name, update_query: DatabaseStatement) -> None:
 def delete_rows(name, delete_query: DatabaseStatement) -> None:
     _execute_statement(name, delete_query)
 
+
 @databases.post("/databases/{name}/insert", status_code=status.HTTP_200_OK)
 def insert_rows(name, delete_query: DatabaseStatement) -> None:
     _execute_statement(name, delete_query)
 
-def _execute_statement(name: str, query: DatabaseStatement) -> None:
+
+@databases.post("/databases/{name}/select", status_code=status.HTTP_200_OK)
+def select_rows(name, delete_query: DatabaseStatement) -> TableSchema:
+    cursor = _execute_statement(name, delete_query)
+    results = cursor.fetchall()
+
+    return TableSchema(
+        columns_description=[
+            ColumnDescription(
+                name=description[0],
+                type_code=description[1].values[0],
+                display_size=description[2],
+                internal_size=description[3],
+                precision=description[4],
+                scale=description[5],
+                nullable=description[6],
+            )
+            for description in cursor.description
+        ],
+        rows=results,
+    )
+
+
+def _execute_statement(name: str, query: DatabaseStatement) -> Cursor:
     try:
         connection = connect_to_database(
             os.path.join(databases_directory, f"{name}.mdb")
         )
         cursor: Cursor = connection.cursor()
         cursor.execute(query.statement)
+        return cursor
     except AccessDatabaseDoesNotExist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
